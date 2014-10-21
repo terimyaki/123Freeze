@@ -1,15 +1,26 @@
-function draw(){
-	var canvas = document.getElementById('playArea');
-	if (canvas.getContext) {
-		var context = canvas.getContext('2d');
+var canvas, context;
+
+window.onload = function(){
+init();
+}
+
+function init() {
+	canvas = document.getElementById('playArea');
+	context = canvas.getContext('2d');
+	render();
+}
+
+function render(){
 		var x = canvas.width / 2;
       	var y = canvas.height / 2;
 
-      	context.font = '30pt sans-serif';
+      	var number = Math.floor(Math.random() * (11 - 1)) + 1;
+
+      	context.font = 'bold 48pt sans-serif';
       	context.textAlign = 'center';
       	context.fillStyle = 'black';
-      	context.fillText('2', x, y);
-	}
+      	context.fillText(number, x, y);
+
 }
 
 function keydown(e){
