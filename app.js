@@ -63,6 +63,10 @@ function generateNumber(){
     context.fillText(number, x, y);
 }
 
+function adjustNumberSpeed(){
+	
+}
+
 function gameStore(){
 	//Manages store that sells powerups
 }
