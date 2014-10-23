@@ -8,8 +8,23 @@ window.onload = function(){
 function init() {
 	canvas = document.getElementById('playArea');
 	context = canvas.getContext('2d');
-	setInterval(render,1000);
+	setInterval(render, gameObjects.speed.totalSpeed);
 }
+
+gameObjects.speed = {
+	multiplier: 1,
+	base: 1000,
+	totalSpeed : 1000,
+	setMultiplier: function(newMultiplier) {
+		multiplier = newMultiplier;
+	},
+	setBase: function(newBase) {
+		base = newBase;
+	},
+	setTotalSpeed: function() {
+		totalSpeed = multiplier * base;
+	}
+};
 
 function createGameObjects(){
 	gameObjects.target = new NumGenerator((canvas.width / 2),(canvas.height / 8), 1, 11, "bold 32pt sans-serif", "gray");
@@ -61,8 +76,12 @@ function keydown(e){
 		case 32: //Spacebar
 			break;
 		case 38: //Up key
+			gameObjects.speed.setMultiplier(gameObjects.speed.multiplier + 1);
+			gameObjects.speed.setTotalSpeed();
 			break;
 		case 40: //Down key
+			gameObjects.speed.setMultiplier(gameObjects.speed.multiplier - 1);
+			gameObjects.speed.setTotalSpeed();
 			break;
 	}
 }
