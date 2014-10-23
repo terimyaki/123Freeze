@@ -12,8 +12,38 @@ function init() {
 }
 
 function createGameObjects(){
-
+	gameObjects.target = new NumGenerator((canvas.width / 2),(canvas.height / 8), 1, 11, "bold 32pt sans-serif", "gray");
+	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 1, 11, "bold 56pt sans-serif", "black");
+	gameObjects.score = 0;
 }
+
+NumGenerator.prototype = function(x, y, min, max, font, fillColor) {
+	this.x = x;
+	this.y = y;
+	this.min = min;
+	this.max = max;
+	this.num = Math.floor(Math.random() * (max - min)) + min;
+	this.font = font;
+	this.fillColor = fillColor;
+
+	this.changeNum= function(){
+		this.num = Math.floor(Math.random() * (this.max - this.min)) + this.min;
+	};
+	this.changeColor = function(newColor) {
+		this.fillColor = newColor;
+	};
+	this.changeXY = function(newX, newY){
+		this.x = newX;
+		this.y = newY;
+	};
+	this.changeMin = function(newMin){
+		this.min = newMin;
+	};
+
+	this.changeMax = function(newMax){
+		this.max = newMax;
+	};
+};
 
 function render(){
 		//loop
@@ -64,7 +94,9 @@ function generateNumber(){
 }
 
 function adjustNumberSpeed(){
-	
+	var x = canvas.width /4;
+	var y = canvas.height * 7 / 8;
+	var number = 1;
 }
 
 function gameStore(){
@@ -73,12 +105,13 @@ function gameStore(){
 
 function checksCollision(){
 	//Checks if the target number was hit and what happens afterwards
+	if (gameObjects.target.num === gameObjects.match.num) {
+		gameObjects.match.changeNum();
+		gameObjects.score += 1;
+	}
+
 }
 
 function inventory(){
 	//Manages inventory of powerups bought
-}
-
-function gameScore(){
-	//Manages gamescore and game points.
 }
