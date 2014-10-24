@@ -8,6 +8,7 @@ window.onload = function(){
 function init() {
 	canvas = document.getElementById('playArea');
 	context = canvas.getContext('2d');
+	createGameObjects();
 	setInterval(render, gameObjects.speed.totalSpeed);
 }
 
@@ -32,7 +33,7 @@ function createGameObjects(){
 	gameObjects.score = 0;
 }
 
-NumGenerator.prototype = function(x, y, min, max, font, fillColor) {
+function NumGenerator (x, y, min, max, font, fillColor) {
 	this.x = x;
 	this.y = y;
 	this.min = min;
@@ -74,6 +75,7 @@ function keydown(e){
 	//Checks what Keys were pressed
 	switch (e.keyCode) {
 		case 32: //Spacebar
+			checkCollision();
 			break;
 		case 38: //Up key
 			gameObjects.speed.setMultiplier(gameObjects.speed.multiplier + 1);
