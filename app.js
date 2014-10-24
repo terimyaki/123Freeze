@@ -16,20 +16,20 @@ gameObjects.speed = {
 	multiplier: 1,
 	base: 1000,
 	totalSpeed : 1000,
-	setMultiplier: function(newMultiplier) {
+	changeMultiplier: function(newMultiplier) {
 		multiplier = newMultiplier;
 	},
-	setBase: function(newBase) {
+	changeBase: function(newBase) {
 		base = newBase;
 	},
-	setTotalSpeed: function() {
+	changeTotalSpeed: function() {
 		totalSpeed = multiplier * base;
 	}
 };
 
 function createGameObjects(){
-	gameObjects.target = new NumGenerator((canvas.width / 2),(canvas.height / 8), 1, 11, "bold 32pt sans-serif", "gray");
-	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 1, 11, "bold 56pt sans-serif", "black");
+	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 1, 11, "bold 32pt sans-serif", "gray");
+	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 1, 11, "bold 64pt sans-serif", "black");
 	gameObjects.score = 0;
 }
 
@@ -59,15 +59,51 @@ function NumGenerator (x, y, min, max, font, fillColor) {
 	this.changeMax = function(newMax){
 		this.max = newMax;
 	};
-};
+}
 
 function render(){
-		//loop
+		//This is the Looping function
+		
+		//Creates the environment
+		//context.fillRect();
+		//context.clearRect();
+		//context.strokeRect();
 		context.save();
 		contextClear();
 
-		generateTarget();
-		generateNumber();
+		gameObjects.match.changeNum();
+
+		//Render Target
+		context.font = gameObjects.goal.font;
+		context.textAlign = "center";
+		context.fillStyle = gameObjects.goal.fillColor;
+		context.fillText(gameObjects.goal.num, gameObjects.goal.x, gameObjects.goal.y);
+		
+		//Render Match
+		context.font = gameObjects.match.font;
+    	context.textAlign = "center";
+    	context.fillStyle = gameObjects.match.fillColor;
+    	context.fillText(gameObjects.match.num, gameObjects.match.x, gameObjects.match.y);
+
+		//Render Multiplier
+		context.font = "bold 16pt sans-serif";
+		context.textAlign = "left";
+		context.fillStyle = "blue";
+		context.fillText("Multiplier: " + gameObjects.speed.multiplier + "x", canvas.width /16, canvas.height * 7 / 8);
+
+		//Render Base Speed
+		context.font = "bold 16pt sans-serif";
+		context.textAlign = "left";
+		context.fillStyle = "blue";
+		context.fillText("Base Speed: " + gameObjects.speed.base, canvas.width/16, canvas.height * 15 / 16);
+
+		//Render Score
+		context.font = "bold 16pt sans-serif";
+		context.textAlign = "right";
+		context.fillStyle = "blue";
+		context.fillText("Score: " + gameObjects.score, canvas.width * 15 / 16, canvas.height / 16);
+
+		//Context Restore
       	context.restore();
 }
 
@@ -78,41 +114,21 @@ function keydown(e){
 			checkCollision();
 			break;
 		case 38: //Up key
-			gameObjects.speed.setMultiplier(gameObjects.speed.multiplier + 1);
-			gameObjects.speed.setTotalSpeed();
+			gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier + 1);
+			gameObjects.speed.changeTotalSpeed();
 			break;
 		case 40: //Down key
-			gameObjects.speed.setMultiplier(gameObjects.speed.multiplier - 1);
-			gameObjects.speed.setTotalSpeed();
+			gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier - 1);
+			gameObjects.speed.changeTotalSpeed();
 			break;
 	}
 }
 
 function contextClear(){
-	context.clearRect(0,0,500,400);
+	context.clearRect(0,0,canvas.width,canvas.height);
 }
 
-function generateTarget(){
-	//Creates random target number
-	var x = canvas.width / 2;
-	var y = canvas.height / 8;
-	var number = Math.floor(Math.random() * (11 - 1)) + 1;
-	context.font = "bold 32pt sans-serif";
-	context.textAlign = "center";
-	context.fillStyle = "gray";
-	context.fillText(number, x, y);
-}
 
-function generateNumber(){
-	//Creates random number
-	var x = canvas.width / 2;
-    var y = canvas.height / 2;
-    var number = Math.floor(Math.random() * (11 - 1)) + 1;
-    context.font = 'bold 56pt sans-serif';
-    context.textAlign = 'center';
-    context.fillStyle = 'black';
-    context.fillText(number, x, y);
-}
 
 function adjustNumberSpeed(){
 	var x = canvas.width /4;
@@ -126,7 +142,7 @@ function gameStore(){
 
 function checksCollision(){
 	//Checks if the target number was hit and what happens afterwards
-	if (gameObjects.target.num === gameObjects.match.num) {
+	if (gameObjects.goal.num === gameObjects.match.num) {
 		gameObjects.match.changeNum();
 		gameObjects.score += 1;
 	}
