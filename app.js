@@ -5,11 +5,13 @@ window.onload = function(){
 	init();
 };
 
+window.addEventListener("keydown", checkKey, false);
+
 function init() {
 	canvas = document.getElementById('playArea');
 	context = canvas.getContext('2d');
 	createGameObjects();
-	setInterval(render, gameObjects.speed.totalSpeed);
+	setInterval(render, gameObjects.speed.getTotalSpeed());
 }
 
 gameObjects.speed = {
@@ -17,19 +19,22 @@ gameObjects.speed = {
 	base: 1000,
 	totalSpeed : 1000,
 	changeMultiplier: function(newMultiplier) {
-		multiplier = newMultiplier;
+		this.multiplier = newMultiplier;
 	},
 	changeBase: function(newBase) {
-		base = newBase;
+		this.base = newBase;
 	},
 	changeTotalSpeed: function() {
-		totalSpeed = multiplier * base;
+		this.totalSpeed = this.multiplier * this.base;
+	},
+	getTotalSpeed: function(){
+		return this.totalSpeed;
 	}
 };
 
 function createGameObjects(){
-	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 1, 11, "bold 32pt sans-serif", "gray");
-	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 1, 11, "bold 64pt sans-serif", "black");
+	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "gray");
+	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
 	gameObjects.score = 0;
 }
 
@@ -63,15 +68,16 @@ function NumGenerator (x, y, min, max, font, fillColor) {
 
 function render(){
 		//This is the Looping function
-		
-		//Creates the environment
-		//context.fillRect();
-		//context.clearRect();
-		//context.strokeRect();
+
 		context.save();
 		contextClear();
 
 		gameObjects.match.changeNum();
+
+		//Creates the environment
+		context.lineWidth = 3;
+		context.fillStyle = "black";
+		context.strokeRect(canvas.width * 7 / 16 , canvas.height / 64, canvas.width / 8, canvas.width /8);
 
 		//Render Target
 		context.font = gameObjects.goal.font;
@@ -107,11 +113,12 @@ function render(){
       	context.restore();
 }
 
-function keydown(e){
+function checkKey(e){
+	e.preventDefault();
 	//Checks what Keys were pressed
 	switch (e.keyCode) {
 		case 32: //Spacebar
-			checkCollision();
+			checksCollision();
 			break;
 		case 38: //Up key
 			gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier + 1);
@@ -129,7 +136,6 @@ function contextClear(){
 }
 
 
-
 function adjustNumberSpeed(){
 	var x = canvas.width /4;
 	var y = canvas.height * 7 / 8;
@@ -142,11 +148,10 @@ function gameStore(){
 
 function checksCollision(){
 	//Checks if the target number was hit and what happens afterwards
-	if (gameObjects.goal.num === gameObjects.match.num) {
-		gameObjects.match.changeNum();
-		gameObjects.score += 1;
+	if (gameObjects.goal.num == gameObjects.match.num) {
+		gameObjects.goal.changeNum();
+		gameObjects.score += gameObjects.speed.multiplier;
 	}
-
 }
 
 function inventory(){
