@@ -17,7 +17,7 @@ function init() {
 gameObjects.speed = {
 	multiplier: 1,
 	base: 1,
-	totalSpeed : 1000,
+	totalSpeed : 500,
 	changeMultiplier: function(newMultiplier) {
 		this.multiplier = newMultiplier;
 	},
@@ -38,7 +38,7 @@ function setRenderSpeed(){
 }
 
 function createGameObjects(){
-	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "gray");
+	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
 	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
 	gameObjects.score = 0;
 }
@@ -157,12 +157,8 @@ function gameStore(){
 function checksCollision(){
 	//Checks if the target number was hit and what happens afterwards
 	if (gameObjects.goal.num === gameObjects.match.num) {
+		gameObjects.score += gameObjects.speed.multiplier;
 		gameObjects.goal.changeNum();
-		if ((gameObjects.score += gameObjects.speed.multiplier) < 0){
-			gameObjects.score += 1;
-		} else {
-			gameObjects.score += gameObjects.speed.multiplier;
-		}
 	}
 }
 
