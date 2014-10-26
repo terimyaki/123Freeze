@@ -11,12 +11,12 @@ function init() {
 	canvas = document.getElementById('playArea');
 	context = canvas.getContext('2d');
 	createGameObjects();
-	setInterval(render, gameObjects.speed.getTotalSpeed());
+	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
 }
 
 gameObjects.speed = {
 	multiplier: 1,
-	base: 1000,
+	base: 1,
 	totalSpeed : 1000,
 	changeMultiplier: function(newMultiplier) {
 		this.multiplier = newMultiplier;
@@ -25,12 +25,17 @@ gameObjects.speed = {
 		this.base = newBase;
 	},
 	changeTotalSpeed: function() {
-		this.totalSpeed = this.multiplier * this.base;
+		this.totalSpeed = this.base * 1000 / this.multiplier;
 	},
 	getTotalSpeed: function(){
 		return this.totalSpeed;
 	}
 };
+
+function setRenderSpeed(){
+	clearInterval(rIntervalId);
+	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
+}
 
 function createGameObjects(){
 	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "gray");
@@ -121,12 +126,22 @@ function checkKey(e){
 			checksCollision();
 			break;
 		case 38: //Up key
-			gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier + 1);
+			if (gameObjects.speed.multiplier === -1){
+				gameObjects.speed.multiplier = 1;
+			} else {
+				gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier + 1);
+			}
 			gameObjects.speed.changeTotalSpeed();
+			setRenderSpeed();
 			break;
 		case 40: //Down key
-			gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier - 1);
+			if(gameObjects.speed.multiplier === 1){
+				gameObjects.speed.multiplier = 1;
+			} else {
+				gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier - 1);
+			}
 			gameObjects.speed.changeTotalSpeed();
+			setRenderSpeed();
 			break;
 	}
 }
@@ -135,22 +150,19 @@ function contextClear(){
 	context.clearRect(0,0,canvas.width,canvas.height);
 }
 
-
-function adjustNumberSpeed(){
-	var x = canvas.width /4;
-	var y = canvas.height * 7 / 8;
-	var number = 1;
-}
-
 function gameStore(){
 	//Manages store that sells powerups
 }
 
 function checksCollision(){
 	//Checks if the target number was hit and what happens afterwards
-	if (gameObjects.goal.num == gameObjects.match.num) {
+	if (gameObjects.goal.num === gameObjects.match.num) {
 		gameObjects.goal.changeNum();
-		gameObjects.score += gameObjects.speed.multiplier;
+		if ((gameObjects.score += gameObjects.speed.multiplier) < 0){
+			gameObjects.score += 1;
+		} else {
+			gameObjects.score += gameObjects.speed.multiplier;
+		}
 	}
 }
 
