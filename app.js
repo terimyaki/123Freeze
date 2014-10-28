@@ -11,36 +11,54 @@ function init() {
 	canvas = document.getElementById('playArea');
 	context = canvas.getContext('2d');
 	createGameObjects();
-	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
+	rIntervalId = setInterval(render, gameObjects.player.speed.getTotalSpeed());
 }
 
-gameObjects.speed = {
-	multiplier: 1,
-	base: 1,
-	totalSpeed : 500,
-	changeMultiplier: function(newMultiplier) {
+function Player(name){
+	this.name = name;
+	this.speed = new Speed();
+	this.inventory = new ItemStorage(5);
+}
+
+function Speed() {
+	this.multiplier = 1;
+	this.base = 1;
+	this.totalSpeed = 500;
+	this.changeMultiplier = function(newMultiplier) {
 		this.multiplier = newMultiplier;
-	},
-	changeBase: function(newBase) {
+	};
+	this.changeBase = function(newBase) {
 		this.base = newBase;
-	},
-	changeTotalSpeed: function() {
-		this.totalSpeed = this.base * 1000 / this.multiplier;
-	},
-	getTotalSpeed: function(){
+	};
+	this.changeTotalSpeed = function() {
+		this.totalSpeed = this.base * 500 / this.multiplier;
+	};
+	this.getTotalSpeed = function(){
 		return this.totalSpeed;
-	}
+	};
+}
+
+gameObjects.player.inventory = {
+
+};
+
+gameObjects.availability = {
+};
+
+gameObjects.store = {
+
 };
 
 function setRenderSpeed(){
 	clearInterval(rIntervalId);
-	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
+	rIntervalId = setInterval(render, gameObjects.player.speed.getTotalSpeed());
 }
 
 function createGameObjects(){
 	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
-	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
-	gameObjects.score = 0;
+	gameObjects.player.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
+	gameObjects.player.victoryPoints = 0;
+	gameObjects.player.money = 0;
 }
 
 function NumGenerator (x, y, min, max, font, fillColor) {
@@ -71,13 +89,29 @@ function NumGenerator (x, y, min, max, font, fillColor) {
 	};
 }
 
+function Item(name, price, abbrev){
+	this.name = name;
+	this.price = price;
+	this.abbrev = abbrev;
+}
+
+function ItemStorage(maxHold){
+	this.maxHold = maxHold;
+
+	this.lessItem = function() {
+	};
+	this.addItem = function() {
+
+	};
+}
+
 function render(){
 		//This is the Looping function
 
 		context.save();
 		contextClear();
 
-		gameObjects.match.changeNum();
+		gameObjects.player.match.changeNum();
 
 		//Creates the environment
 		context.lineWidth = 3;
@@ -91,28 +125,34 @@ function render(){
 		context.fillText(gameObjects.goal.num, gameObjects.goal.x, gameObjects.goal.y);
 		
 		//Render Match
-		context.font = gameObjects.match.font;
+		context.font = gameObjects.player.match.font;
     	context.textAlign = "center";
-    	context.fillStyle = gameObjects.match.fillColor;
-    	context.fillText(gameObjects.match.num, gameObjects.match.x, gameObjects.match.y);
+    	context.fillStyle = gameObjects.player.match.fillColor;
+    	context.fillText(gameObjects.player.match.num, gameObjects.player.match.x, gameObjects.player.match.y);
 
 		//Render Multiplier
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "left";
 		context.fillStyle = "blue";
-		context.fillText("Multiplier: " + gameObjects.speed.multiplier + "x", canvas.width /16, canvas.height * 7 / 8);
+		context.fillText("Multiplier: " + gameObjects.player.speed.multiplier + "x", canvas.width /16, canvas.height * 29 / 32);
 
 		//Render Base Speed
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "left";
 		context.fillStyle = "blue";
-		context.fillText("Base Speed: " + gameObjects.speed.base, canvas.width/16, canvas.height * 15 / 16);
+		context.fillText("Base Speed: " + gameObjects.player.speed.base, canvas.width/16, canvas.height * 31 / 32);
 
-		//Render Score
+		//Render Money
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "right";
 		context.fillStyle = "blue";
-		context.fillText("Score: " + gameObjects.score, canvas.width * 15 / 16, canvas.height / 16);
+		context.fillText("Money: " + gameObjects.player.money, canvas.width * 15 / 16, canvas.height * 2 / 16);
+
+		//Render Victory Points
+		context.font = "bold 16pt sans-serif";
+		context.textAlign = "right";
+		context.fillStyle = "purple";
+		context.fillText("Victory Points: " + gameObjects.player.victoryPoints, canvas.width * 15 / 16, canvas.height / 16);
 
 		//Context Restore
       	context.restore();
@@ -126,21 +166,21 @@ function checkKey(e){
 			checksCollision();
 			break;
 		case 38: //Up key
-			if (gameObjects.speed.multiplier === -1){
-				gameObjects.speed.multiplier = 1;
+			if (gameObjects.player.speed.multiplier === -1){
+				gameObjects.player.speed.multiplier = 1;
 			} else {
-				gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier + 1);
+				gameObjects.player.speed.changeMultiplier(gameObjects.player.speed.multiplier + 1);
 			}
-			gameObjects.speed.changeTotalSpeed();
+			gameObjects.player.speed.changeTotalSpeed();
 			setRenderSpeed();
 			break;
 		case 40: //Down key
-			if(gameObjects.speed.multiplier === 1){
-				gameObjects.speed.multiplier = 1;
+			if(gameObjects.player.speed.multiplier === 1){
+				gameObjects.player.speed.multiplier = 1;
 			} else {
-				gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier - 1);
+				gameObjects.player.speed.changeMultiplier(gameObjects.player.speed.multiplier - 1);
 			}
-			gameObjects.speed.changeTotalSpeed();
+			gameObjects.player.speed.changeTotalSpeed();
 			setRenderSpeed();
 			break;
 	}
@@ -156,8 +196,8 @@ function gameStore(){
 
 function checksCollision(){
 	//Checks if the target number was hit and what happens afterwards
-	if (gameObjects.goal.num === gameObjects.match.num) {
-		gameObjects.score += gameObjects.speed.multiplier;
+	if (gameObjects.goal.num === gameObjects.player.match.num) {
+		gameObjects.player.money += gameObjects.player.speed.multiplier;
 		gameObjects.goal.changeNum();
 	}
 }
