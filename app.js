@@ -11,7 +11,7 @@ function init() {
 	canvas = document.getElementById('playArea');
 	context = canvas.getContext('2d');
 	createGameObjects();
-	rIntervalId = setInterval(render, gameObjects.player.speed.getTotalSpeed());
+	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
 }
 
 function Player(name){
@@ -38,27 +38,17 @@ function Speed() {
 	};
 }
 
-gameObjects.player.inventory = {
-
-};
-
-gameObjects.availability = {
-};
-
-gameObjects.store = {
-
-};
-
 function setRenderSpeed(){
 	clearInterval(rIntervalId);
-	rIntervalId = setInterval(render, gameObjects.player.speed.getTotalSpeed());
+	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
 }
 
 function createGameObjects(){
 	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
-	gameObjects.player.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
-	gameObjects.player.victoryPoints = 0;
-	gameObjects.player.money = 0;
+	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
+	gameObjects.speed = new Speed();
+	gameObjects.victoryPoints = 0;
+	gameObjects.money = 0;
 }
 
 function NumGenerator (x, y, min, max, font, fillColor) {
@@ -111,7 +101,7 @@ function render(){
 		context.save();
 		contextClear();
 
-		gameObjects.player.match.changeNum();
+		gameObjects.match.changeNum();
 
 		//Creates the environment
 		context.lineWidth = 3;
@@ -125,34 +115,34 @@ function render(){
 		context.fillText(gameObjects.goal.num, gameObjects.goal.x, gameObjects.goal.y);
 		
 		//Render Match
-		context.font = gameObjects.player.match.font;
+		context.font = gameObjects.match.font;
     	context.textAlign = "center";
-    	context.fillStyle = gameObjects.player.match.fillColor;
-    	context.fillText(gameObjects.player.match.num, gameObjects.player.match.x, gameObjects.player.match.y);
+    	context.fillStyle = gameObjects.match.fillColor;
+    	context.fillText(gameObjects.match.num, gameObjects.match.x, gameObjects.match.y);
 
 		//Render Multiplier
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "left";
 		context.fillStyle = "blue";
-		context.fillText("Multiplier: " + gameObjects.player.speed.multiplier + "x", canvas.width /16, canvas.height * 29 / 32);
+		context.fillText("Multiplier: " + gameObjects.speed.multiplier + "x", canvas.width /16, canvas.height * 29 / 32);
 
 		//Render Base Speed
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "left";
 		context.fillStyle = "blue";
-		context.fillText("Base Speed: " + gameObjects.player.speed.base, canvas.width/16, canvas.height * 31 / 32);
+		context.fillText("Base Speed: " + gameObjects.speed.base, canvas.width/16, canvas.height * 31 / 32);
 
 		//Render Money
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "right";
 		context.fillStyle = "blue";
-		context.fillText("Money: " + gameObjects.player.money, canvas.width * 15 / 16, canvas.height * 2 / 16);
+		context.fillText("Money: " + gameObjects.money, canvas.width * 15 / 16, canvas.height * 2 / 16);
 
 		//Render Victory Points
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "right";
 		context.fillStyle = "purple";
-		context.fillText("Victory Points: " + gameObjects.player.victoryPoints, canvas.width * 15 / 16, canvas.height / 16);
+		context.fillText("Victory Points: " + gameObjects.victoryPoints, canvas.width * 15 / 16, canvas.height / 16);
 
 		//Context Restore
       	context.restore();
@@ -166,21 +156,21 @@ function checkKey(e){
 			checksCollision();
 			break;
 		case 38: //Up key
-			if (gameObjects.player.speed.multiplier === -1){
-				gameObjects.player.speed.multiplier = 1;
+			if (gameObjects.speed.multiplier === -1){
+				gameObjects.speed.multiplier = 1;
 			} else {
-				gameObjects.player.speed.changeMultiplier(gameObjects.player.speed.multiplier + 1);
+				gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier + 1);
 			}
-			gameObjects.player.speed.changeTotalSpeed();
+			gameObjects.speed.changeTotalSpeed();
 			setRenderSpeed();
 			break;
 		case 40: //Down key
-			if(gameObjects.player.speed.multiplier === 1){
-				gameObjects.player.speed.multiplier = 1;
+			if(gameObjects.speed.multiplier === 1){
+				gameObjects.speed.multiplier = 1;
 			} else {
-				gameObjects.player.speed.changeMultiplier(gameObjects.player.speed.multiplier - 1);
+				gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier - 1);
 			}
-			gameObjects.player.speed.changeTotalSpeed();
+			gameObjects.speed.changeTotalSpeed();
 			setRenderSpeed();
 			break;
 	}
@@ -196,8 +186,8 @@ function gameStore(){
 
 function checksCollision(){
 	//Checks if the target number was hit and what happens afterwards
-	if (gameObjects.goal.num === gameObjects.player.match.num) {
-		gameObjects.player.money += gameObjects.player.speed.multiplier;
+	if (gameObjects.goal.num === gameObjects.match.num) {
+		gameObjects.money += gameObjects.speed.multiplier;
 		gameObjects.goal.changeNum();
 	}
 }
