@@ -2,14 +2,14 @@ var canvas,context;
 var gameObjects = {};
 
 window.onload = function(){
+	canvas = document.getElementById('playArea');
+	context = canvas.getContext('2d');
 	init();
 };
 
 window.addEventListener("keydown", checkKey, false);
 
 function init() {
-	canvas = document.getElementById('playArea');
-	context = canvas.getContext('2d');
 	createGameObjects();
 	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
 }
@@ -47,6 +47,8 @@ function createGameObjects(){
 	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
 	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
 	gameObjects.speed = new Speed();
+	gameObjects.inventory = new ItemStorage(5);
+	gameObjects.store = new ItemStorage(5);
 	gameObjects.victoryPoints = 0;
 	gameObjects.money = 0;
 }
@@ -87,11 +89,26 @@ function Item(name, price, abbrev){
 
 function ItemStorage(maxHold){
 	this.maxHold = maxHold;
+	this.set = [];
 
-	this.lessItem = function() {
+	this.render = function() {
+		
 	};
-	this.addItem = function() {
 
+	this.lessItem = function(itemNumber) {
+		if (this.set.length === 0){
+			alert("you don't have any item.");
+		} else {
+			this.set.splice(itemNumber, 1);
+		}
+	};
+
+	this.addItem = function(item) {
+		if (this.set.length === maxHold) {
+			alert("you have don't have any room.");
+		} else {
+			this.set.push(item);
+		}
 	};
 }
 
@@ -124,13 +141,13 @@ function render(){
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "left";
 		context.fillStyle = "blue";
-		context.fillText("Multiplier: " + gameObjects.speed.multiplier + "x", canvas.width /16, canvas.height * 29 / 32);
+		context.fillText("Multiplier: " + gameObjects.speed.multiplier + "x", canvas.width /16, canvas.height / 16);
 
 		//Render Base Speed
 		context.font = "bold 16pt sans-serif";
 		context.textAlign = "left";
 		context.fillStyle = "blue";
-		context.fillText("Base Speed: " + gameObjects.speed.base, canvas.width/16, canvas.height * 31 / 32);
+		context.fillText("Base Speed: " + gameObjects.speed.base, canvas.width/16, canvas.height * 2 / 16);
 
 		//Render Money
 		context.font = "bold 16pt sans-serif";
