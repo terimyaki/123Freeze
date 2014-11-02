@@ -8,6 +8,8 @@ window.onload = function(){
 };
 
 window.addEventListener("keydown", checkKey, false);
+window.addEventListener("click", checkMouse, false);
+window.addEventListener("touchstart", checkTouch, false);
 
 function init() {
 	createGameObjects();
@@ -191,6 +193,20 @@ function checkKey(e){
 			setRenderSpeed();
 			break;
 	}
+}
+
+function checkMouse(e){
+	e.preventDefault();
+	e = e || window.event;
+	var button = e.which || e.button;
+	if (button == 1) { //Checks if it is a left mouse button click
+		checksCollision();
+	}
+}
+
+function checkTouch(e){
+	e.preventDefault();
+	checksCollision();
 }
 
 function contextClear(){
