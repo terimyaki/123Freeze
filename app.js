@@ -92,9 +92,17 @@ function Item(name, price, abbrev){
 function ItemStorage(maxHold){
 	this.maxHold = maxHold;
 	this.set = [];
+	this.isRender = false;
 
 	this.render = function() {
-		
+		context.lineWidth = 1;
+		context.fillStyle = "black";
+		context.textAlign = "center";
+		context.strokeRect(canvas.width / 2  , canvas.height * 13 / 16, canvas.width / 8, canvas.width / 8);
+	};
+
+	this.clearRender = function() {
+		context.clearRect(canvas.width / 2  , canvas.height * 13 / 16, canvas.width / 8, canvas.width / 8);
 	};
 
 	this.lessItem = function(itemNumber) {
@@ -163,6 +171,11 @@ function render(){
 		context.fillStyle = "purple";
 		context.fillText("Victory Points: " + gameObjects.victoryPoints, canvas.width * 15 / 16, canvas.height / 16);
 
+		//Render Inventory
+		if(gameObjects.inventory.isRender == true){
+			gameObjects.inventory.render();
+		}
+
 		//Context Restore
       	context.restore();
 }
@@ -191,6 +204,16 @@ function checkKey(e){
 			}
 			gameObjects.speed.changeTotalSpeed();
 			setRenderSpeed();
+			break;
+		case 73: //"i" key
+			if(gameObjects.inventory.isRender === true){
+				gameObjects.inventory.isRender = false;
+				gameObjects.inventory.clearRender();
+			} else {
+				gameObjects.inventory.isRender = true;
+			}
+			break;
+		case 83: //"s" key
 			break;
 	}
 }
