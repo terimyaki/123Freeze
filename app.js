@@ -16,29 +16,6 @@ function init() {
 	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
 }
 
-function Player(name){
-	this.name = name;
-	this.speed = new Speed();
-	this.inventory = new ItemStorage(5);
-}
-
-function Speed() {
-	this.multiplier = 1;
-	this.base = 1;
-	this.totalSpeed = 200;
-	this.changeMultiplier = function(newMultiplier) {
-		this.multiplier = newMultiplier;
-	};
-	this.changeBase = function(newBase) {
-		this.base = newBase;
-	};
-	this.changeTotalSpeed = function() {
-		this.totalSpeed = this.base * 200 / this.multiplier;
-	};
-	this.getTotalSpeed = function(){
-		return this.totalSpeed;
-	};
-}
 
 function setRenderSpeed(){
 	clearInterval(rIntervalId);
@@ -46,100 +23,18 @@ function setRenderSpeed(){
 }
 
 function createGameObjects(){
+	// Creates all the game objects that will be used.
 	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
 	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
 	gameObjects.speed = new Speed();
-	gameObjects.inventory = new ItemStorage('Inventory', 8);
-	gameObjects.store = new ItemStorage('Store', 5);
+	gameObjects.inventory = new ItemStorage('Inventory', 5);
+	gameObjects.store = new ItemStorage('Store', 6);
 	gameObjects.victoryPoints = 0;
 	gameObjects.money = 0;
 }
 
-function NumGenerator (x, y, min, max, font, fillColor) {
-	this.x = x;
-	this.y = y;
-	this.min = min;
-	this.max = max;
-	this.num = Math.floor(Math.random() * (max - min)) + min;
-	this.font = font;
-	this.fillColor = fillColor;
-
-	this.changeNum= function(){
-		this.num = Math.floor(Math.random() * (this.max - this.min)) + this.min;
-	};
-	this.changeColor = function(newColor) {
-		this.fillColor = newColor;
-	};
-	this.changeXY = function(newX, newY){
-		this.x = newX;
-		this.y = newY;
-	};
-	this.changeMin = function(newMin){
-		this.min = newMin;
-	};
-
-	this.changeMax = function(newMax){
-		this.max = newMax;
-	};
-}
-
-function Item(name, price, abbrev, color){
-	this.name = name;
-	this.price = price;
-	this.abbrev = abbrev;
-	this.color = color;
-
-	this.render = function(){
-
-	};
-}
-
-function ItemStorage(name, maxHold){
-	this.name = name;
-	this.maxHold = maxHold;
-	this.set = [];
-	this.isRender = false;
-	this.sideLength = canvas.width / 8;
-
-	this.render = function() {
-		var sideTop = canvas.height * 15 / 16 - this.sideLength;
-		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
-
-		for (i = 0; i < maxHold; i++){
-			context.lineWidth = 1;
-			context.fillStyle = "black";
-			context.textAlign = "center";
-			context.strokeRect(startXCor , sideTop, this.sideLength, this.sideLength);
-			startXCor += this.sideLength;
-		}
-	};
-
-	this.clearRender = function() {
-		var sideTop = canvas.height * 15 / 16 - this.sideLength;
-		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
-
-		context.clearRect(startXCor, sideTop, this.sideLength * this.maxHold, this.sideLength);
-	};
-
-	this.lessItem = function(itemNumber) {
-		if (this.set.length === 0){
-			alert("you don't have any item.");
-		} else {
-			this.set.splice(itemNumber, 1);
-		}
-	};
-
-	this.addItem = function(item) {
-		if (this.set.length === maxHold) {
-			alert("you have don't have any room.");
-		} else {
-			this.set.push(item);
-		}
-	};
-}
-
 function render(){
-		//This is the Looping function
+		//This is the Looping function that renders the game
 
 		context.save();
 		contextClear();
@@ -251,6 +146,7 @@ function checkKey(e){
 }
 
 function checkMouse(e){
+	//This handles the click events
 	e.preventDefault();
 	e = e || window.event;
 	var button = e.which || e.button;
@@ -260,16 +156,13 @@ function checkMouse(e){
 }
 
 function checkTouch(e){
+	//this handles the touch events
 	e.preventDefault();
 	checksCollision();
 }
 
 function contextClear(){
 	context.clearRect(0,0,canvas.width,canvas.height);
-}
-
-function gameStore(){
-	//Manages store that sells powerups
 }
 
 function checksCollision(){
@@ -280,6 +173,134 @@ function checksCollision(){
 	}
 }
 
-function inventory(){
-	//Manages inventory of powerups bought
+function Player(name){
+	this.name = name;
+	this.speed = new Speed();
+	this.inventory = new ItemStorage(5);
 }
+
+function Speed() {
+	this.multiplier = 1;
+	this.base = 1;
+	this.totalSpeed = 200;
+	this.changeMultiplier = function(newMultiplier) {
+		this.multiplier = newMultiplier;
+	};
+	this.changeBase = function(newBase) {
+		this.base = newBase;
+	};
+	this.changeTotalSpeed = function() {
+		this.totalSpeed = this.base * 200 / this.multiplier;
+	};
+	this.getTotalSpeed = function(){
+		return this.totalSpeed;
+	};
+}
+
+function NumGenerator (x, y, min, max, font, fillColor) {
+	this.x = x;
+	this.y = y;
+	this.min = min;
+	this.max = max;
+	this.num = Math.floor(Math.random() * (max - min)) + min;
+	this.font = font;
+	this.fillColor = fillColor;
+
+	this.changeNum= function(){
+		this.num = Math.floor(Math.random() * (this.max - this.min)) + this.min;
+	};
+	this.changeColor = function(newColor) {
+		this.fillColor = newColor;
+	};
+	this.changeXY = function(newX, newY){
+		this.x = newX;
+		this.y = newY;
+	};
+	this.changeMin = function(newMin){
+		this.min = newMin;
+	};
+
+	this.changeMax = function(newMax){
+		this.max = newMax;
+	};
+}
+
+function Item(name, price, abbrev, color){
+	//Defines what is an item
+	this.name = name; //Name of the item
+	this.price = price; //Price of the item, which is only relevant if the item is in the store
+	this.abbrev = abbrev; //Abbreviaton of the item that will show on the canvas
+	this.color = color; //The unique color that signifies what item that is current being viewed
+
+	this.render = function(startXCor, sideTop, sideLength, isStore){
+		context.fillStyle = this.color;
+		context.textAlign = "center";
+		context.strokeRect(startXCor , sideTop, sideLength, sideLength);
+
+		context.font = "bold 8pt sans-serif";
+		context.textAlign = "center";
+		context.fillStyle = "black";
+		context.fillText(abbrev, startXCor + sideLength / 2, sideTop + sideLength / 2);
+	};
+}
+
+function ItemStorage(name, maxHold){
+	//Defines what is an item storage object
+	this.name = name; //Name of the storage
+	this.maxHold = maxHold; //Maximum Size of the storage
+	this.set = []; //What is currently in the storage
+	this.isRender = false; //Boolean of if the storage is currently being rendered on the canvas
+	this.sideLength = canvas.width / 8;
+
+	this.render = function() {
+		//Rendering of the skeleton of the storage
+		var sideTop = canvas.height * 15 / 16 - this.sideLength;
+		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
+
+		context.font = "bold 12pt sans-serif";
+		context.textAlign = "left";
+		context.fillStyle = "black";
+		context.fillText(name, startXCor, sideTop - canvas.height / 32);
+
+		for (i = 0; i < maxHold; i++){
+			context.lineWidth = 1;
+			context.fillStyle = "black";
+			context.textAlign = "center";
+			context.strokeRect(startXCor , sideTop, this.sideLength, this.sideLength);
+
+			context.font = "bold 8pt sans-serif";
+			context.textAlign = "center";
+			context.fillStyle = "grey";
+			context.fillText(i + 1, startXCor + this.sideLength / 2, sideTop + this.sideLength + canvas.height / 32);
+
+			startXCor += this.sideLength;
+		}
+	};
+
+	this.clearRender = function() {
+		//Clears the rendering of the skeleton of the storage
+		var sideTop = canvas.height * 15 / 16 - this.sideLength;
+		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
+
+		context.clearRect(startXCor, sideTop, this.sideLength * this.maxHold, this.sideLength);
+	};
+
+	this.lessItem = function(itemNumber) {
+		//Removes an item from the set
+		if (this.set.length === 0){
+			alert("you don't have any item.");
+		} else {
+			this.set.splice(itemNumber, 1);
+		}
+	};
+
+	this.addItem = function(item) {
+		//Adds an item to the set
+		if (this.set.length === maxHold) {
+			alert("you have don't have any room.");
+		} else {
+			this.set.push(item);
+		}
+	};
+}
+
