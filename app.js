@@ -25,7 +25,7 @@ function Player(name){
 function Speed() {
 	this.multiplier = 1;
 	this.base = 1;
-	this.totalSpeed = 500;
+	this.totalSpeed = 200;
 	this.changeMultiplier = function(newMultiplier) {
 		this.multiplier = newMultiplier;
 	};
@@ -33,7 +33,7 @@ function Speed() {
 		this.base = newBase;
 	};
 	this.changeTotalSpeed = function() {
-		this.totalSpeed = this.base * 500 / this.multiplier;
+		this.totalSpeed = this.base * 200 / this.multiplier;
 	};
 	this.getTotalSpeed = function(){
 		return this.totalSpeed;
@@ -49,8 +49,8 @@ function createGameObjects(){
 	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
 	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
 	gameObjects.speed = new Speed();
-	gameObjects.inventory = new ItemStorage(5);
-	gameObjects.store = new ItemStorage(5);
+	gameObjects.inventory = new ItemStorage('Inventory', 8);
+	gameObjects.store = new ItemStorage('Store', 5);
 	gameObjects.victoryPoints = 0;
 	gameObjects.money = 0;
 }
@@ -83,26 +83,42 @@ function NumGenerator (x, y, min, max, font, fillColor) {
 	};
 }
 
-function Item(name, price, abbrev){
+function Item(name, price, abbrev, color){
 	this.name = name;
 	this.price = price;
 	this.abbrev = abbrev;
+	this.color = color;
+
+	this.render = function(){
+
+	};
 }
 
-function ItemStorage(maxHold){
+function ItemStorage(name, maxHold){
+	this.name = name;
 	this.maxHold = maxHold;
 	this.set = [];
 	this.isRender = false;
+	this.sideLength = canvas.width / 8;
 
 	this.render = function() {
-		context.lineWidth = 1;
-		context.fillStyle = "black";
-		context.textAlign = "center";
-		context.strokeRect(canvas.width / 2  , canvas.height * 13 / 16, canvas.width / 8, canvas.width / 8);
+		var sideTop = canvas.height * 15 / 16 - this.sideLength;
+		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
+
+		for (i = 0; i < maxHold; i++){
+			context.lineWidth = 1;
+			context.fillStyle = "black";
+			context.textAlign = "center";
+			context.strokeRect(startXCor , sideTop, this.sideLength, this.sideLength);
+			startXCor += this.sideLength;
+		}
 	};
 
 	this.clearRender = function() {
-		context.clearRect(canvas.width / 2  , canvas.height * 13 / 16, canvas.width / 8, canvas.width / 8);
+		var sideTop = canvas.height * 15 / 16 - this.sideLength;
+		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
+
+		context.clearRect(startXCor, sideTop, this.sideLength * this.maxHold, this.sideLength);
 	};
 
 	this.lessItem = function(itemNumber) {
@@ -172,8 +188,10 @@ function render(){
 		context.fillText("Victory Points: " + gameObjects.victoryPoints, canvas.width * 15 / 16, canvas.height / 16);
 
 		//Render Inventory
-		if(gameObjects.inventory.isRender == true){
+		if(gameObjects.inventory.isRender === true){
 			gameObjects.inventory.render();
+		} else if (gameObjects.store.isRender === true){
+			gameObjects.store.render();
 		}
 
 		//Context Restore
@@ -206,7 +224,11 @@ function checkKey(e){
 			setRenderSpeed();
 			break;
 		case 73: //"i" key
-			if(gameObjects.inventory.isRender === true){
+			if (gameObjects.store.isRender === true){
+				gameObjects.store.isRender = false;
+				gameObjects.store.clearRender();
+				gameObjects.inventory.isRender = true;
+			} else if(gameObjects.inventory.isRender === true){
 				gameObjects.inventory.isRender = false;
 				gameObjects.inventory.clearRender();
 			} else {
@@ -214,6 +236,16 @@ function checkKey(e){
 			}
 			break;
 		case 83: //"s" key
+			if (gameObjects.inventory.isRender === true){
+				gameObjects.inventory.isRender = false;
+				gameObjects.inventory.clearRender();
+				gameObjects.store.isRender = true;
+			} else if(gameObjects.store.isRender === true){
+				gameObjects.store.isRender = false;
+				gameObjects.store.clearRender();
+			} else {
+				gameObjects.store.isRender = true;
+			}
 			break;
 	}
 }
