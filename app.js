@@ -16,7 +16,6 @@ function init() {
 	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
 }
 
-
 function setRenderSpeed(){
 	clearInterval(rIntervalId);
 	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
@@ -182,7 +181,7 @@ function Player(name){
 function Speed() {
 	this.multiplier = 1;
 	this.base = 1;
-	this.totalSpeed = 200;
+	this.totalSpeed = 1000;
 	this.changeMultiplier = function(newMultiplier) {
 		this.multiplier = newMultiplier;
 	};
@@ -190,7 +189,7 @@ function Speed() {
 		this.base = newBase;
 	};
 	this.changeTotalSpeed = function() {
-		this.totalSpeed = this.base * 200 / this.multiplier;
+		this.totalSpeed = 1000 / (this.multiplier * this.base);
 	};
 	this.getTotalSpeed = function(){
 		return this.totalSpeed;
