@@ -28,6 +28,9 @@ function createGameObjects(){
 	gameObjects.speed = new Speed();
 	gameObjects.inventory = new ItemStorage('Inventory', 5);
 	gameObjects.store = new ItemStorage('Store', 6);
+	for (i=0; i < gameObjects.store.maxHold; i++){
+		gameObjects.store.addItem(Object.keys(gameObjects.store.availableItems)[Math.floor(Math.random() * Object.keys(gameObjects.store.availableItems).length)]);
+	}
 	gameObjects.victoryPoints = 0;
 	gameObjects.money = 0;
 }
@@ -231,15 +234,15 @@ function Item(name, price, abbrev, color){
 	this.abbrev = abbrev; //Abbreviaton of the item that will show on the canvas
 	this.color = color; //The unique color that signifies what item that is current being viewed
 
-	this.render = function(startXCor, sideTop, sideLength, isStore){
+	this.render = function(startXCor, startYCor, sideLength, isStore){
 		context.fillStyle = this.color;
 		context.textAlign = "center";
-		context.fillRect(startXCor , sideTop, sideLength, sideLength);
+		context.fillRect(startXCor , startYCor, sideLength, sideLength);
 
-		context.font = "bold 8pt sans-serif";
+		context.font = "bold 12pt sans-serif";
 		context.textAlign = "center";
 		context.fillStyle = "black";
-		context.fillText(abbrev, startXCor + sideLength / 2, sideTop + sideLength / 2);
+		context.fillText(abbrev, startXCor + sideLength / 2, startYCor + sideLength / 2);
 	};
 }
 
@@ -253,38 +256,39 @@ function ItemStorage(name, maxHold){
 
 	this.availableItems = {};
 	this.availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow");
+	this.availableItems.changeColor = new Item("Change Color", 10, "CC", "orange");
 
 	this.render = function() {
 		//Rendering of the skeleton of the storage
-		var sideTop = canvas.height * 15 / 16 - this.sideLength;
+		var startYCor = canvas.height * 15 / 16 - this.sideLength;
 		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
 
 		context.font = "bold 12pt sans-serif";
 		context.textAlign = "left";
 		context.fillStyle = "black";
-		context.fillText(name, startXCor, sideTop - canvas.height / 32);
+		context.fillText(name, startXCor, startYCor - canvas.height / 32);
 
 		for (i = 0; i < maxHold; i++){
 			context.lineWidth = 1;
 			context.fillStyle = "black";
 			context.textAlign = "center";
-			context.strokeRect(startXCor , sideTop, this.sideLength, this.sideLength);
+			context.strokeRect(startXCor , startYCor, this.sideLength, this.sideLength);
 
 			context.font = "bold 8pt sans-serif";
 			context.textAlign = "center";
 			context.fillStyle = "grey";
-			context.fillText(i + 1, startXCor + this.sideLength / 2, sideTop + this.sideLength + canvas.height / 32);
+			context.fillText(i + 1, startXCor + this.sideLength / 2, startYCor + this.sideLength + canvas.height / 32);
 
 			if (this.set[i] === undefined){
 				context.fillStyle = 'rgb(220,220,220)';
-				context.fillRect(startXCor, sideTop, this.sideLength, this.sideLength);
+				context.fillRect(startXCor, startYCor, this.sideLength, this.sideLength);
 
 				context.font = "bold 8pt sans-serif";
 				context.textAlign = "center";
 				context.fillStyle = "black";
-				context.fillText("no item", startXCor + this.sideLength / 2, sideTop + this.sideLength / 2);
+				context.fillText("no item", startXCor + this.sideLength / 2, startYCor + this.sideLength / 2);
 			} else {
-				this.set[i].render();
+				this.availableItems[this.set[i]].render(startXCor, startYCor, this.sideLength);
 			}
 
 			startXCor += this.sideLength;
@@ -293,10 +297,10 @@ function ItemStorage(name, maxHold){
 
 	this.clearRender = function() {
 		//Clears the rendering of the skeleton of the storage
-		var sideTop = canvas.height * 15 / 16 - this.sideLength;
+		var startYCor = canvas.height * 15 / 16 - this.sideLength;
 		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
 
-		context.clearRect(startXCor, sideTop, this.sideLength * this.maxHold, this.sideLength);
+		context.clearRect(startXCor, startYCor, this.sideLength * this.maxHold, this.sideLength);
 	};
 
 	this.lessItem = function(itemNumber) {
