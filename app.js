@@ -234,7 +234,7 @@ function Item(name, price, abbrev, color){
 	this.render = function(startXCor, sideTop, sideLength, isStore){
 		context.fillStyle = this.color;
 		context.textAlign = "center";
-		context.strokeRect(startXCor , sideTop, sideLength, sideLength);
+		context.fillRect(startXCor , sideTop, sideLength, sideLength);
 
 		context.font = "bold 8pt sans-serif";
 		context.textAlign = "center";
@@ -250,6 +250,9 @@ function ItemStorage(name, maxHold){
 	this.set = []; //What is currently in the storage
 	this.isRender = false; //Boolean of if the storage is currently being rendered on the canvas
 	this.sideLength = canvas.width / 8;
+
+	this.availableItems = {};
+	this.availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow");
 
 	this.render = function() {
 		//Rendering of the skeleton of the storage
@@ -271,6 +274,18 @@ function ItemStorage(name, maxHold){
 			context.textAlign = "center";
 			context.fillStyle = "grey";
 			context.fillText(i + 1, startXCor + this.sideLength / 2, sideTop + this.sideLength + canvas.height / 32);
+
+			if (this.set[i] === undefined){
+				context.fillStyle = 'rgb(220,220,220)';
+				context.fillRect(startXCor, sideTop, this.sideLength, this.sideLength);
+
+				context.font = "bold 8pt sans-serif";
+				context.textAlign = "center";
+				context.fillStyle = "black";
+				context.fillText("no item", startXCor + this.sideLength / 2, sideTop + this.sideLength / 2);
+			} else {
+				this.set[i].render();
+			}
 
 			startXCor += this.sideLength;
 		}
@@ -302,4 +317,3 @@ function ItemStorage(name, maxHold){
 		}
 	};
 }
-
