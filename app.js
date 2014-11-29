@@ -4,15 +4,15 @@ var gameObjects = {};
 window.onload = function(){
 	canvas = document.getElementById('playArea');
 	context = canvas.getContext('2d');
-	init();
+	initialize();
+	loop();
 };
 
 window.addEventListener("keydown", checkKey, false);
 window.addEventListener("click", checkMouse, false);
 window.addEventListener("touchstart", checkTouch, false);
 
-function init() {
-	createGameObjects();
+function loop() {
 	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
 }
 
@@ -21,12 +21,13 @@ function setRenderSpeed(){
 	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
 }
 
-function createGameObjects(){
+function initialize(){
 	// Creates all the game objects that will be used.
 	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
 	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
 	gameObjects.speed = new Speed();
 	gameObjects.inventory = new ItemStorage('Inventory', 5);
+	gameObjects.inventory.isRender = true;
 	gameObjects.store = new ItemStorage('Store', 6);
 	for (i=0; i < gameObjects.store.maxHold; i++){
 		gameObjects.store.addItem(Object.keys(gameObjects.store.availableItems)[Math.floor(Math.random() * Object.keys(gameObjects.store.availableItems).length)]);
@@ -125,9 +126,6 @@ function checkKey(e){
 				gameObjects.store.isRender = false;
 				gameObjects.store.clearRender();
 				gameObjects.inventory.isRender = true;
-			} else if(gameObjects.inventory.isRender === true){
-				gameObjects.inventory.isRender = false;
-				gameObjects.inventory.clearRender();
 			} else {
 				gameObjects.inventory.isRender = true;
 			}
@@ -137,9 +135,6 @@ function checkKey(e){
 				gameObjects.inventory.isRender = false;
 				gameObjects.inventory.clearRender();
 				gameObjects.store.isRender = true;
-			} else if(gameObjects.store.isRender === true){
-				gameObjects.store.isRender = false;
-				gameObjects.store.clearRender();
 			} else {
 				gameObjects.store.isRender = true;
 			}
@@ -183,21 +178,25 @@ function Player(name){
 
 function Speed() {
 	this.multiplier = 1;
-	this.base = 1;
+	this.base = 10;
 	this.totalSpeed = 1000;
-	this.changeMultiplier = function(newMultiplier) {
-		this.multiplier = newMultiplier;
-	};
-	this.changeBase = function(newBase) {
-		this.base = newBase;
-	};
-	this.changeTotalSpeed = function() {
-		this.totalSpeed = 1000 / (this.multiplier * this.base);
-	};
-	this.getTotalSpeed = function(){
-		return this.totalSpeed;
-	};
 }
+
+Speed.prototype.changeMultiplier = function(newMultiplier) {
+		this.multiplier = newMultiplier;
+};
+
+Speed.prototype.changeBase = function(newBase) {
+		this.base = newBase;
+};
+
+Speed.prototype.changeTotalSpeed = function() {
+		this.totalSpeed = 1000 - this.base * (10 + this.multiplier);
+};
+
+Speed.prototype.getTotalSpeed = function(){
+		return this.totalSpeed;
+};
 
 function NumGenerator (x, y, min, max, font, fillColor) {
 	this.x = x;
@@ -207,25 +206,29 @@ function NumGenerator (x, y, min, max, font, fillColor) {
 	this.num = Math.floor(Math.random() * (max - min)) + min;
 	this.font = font;
 	this.fillColor = fillColor;
+}
 
-	this.changeNum= function(){
+NumGenerator.prototype.changeNum= function(){
 		this.num = Math.floor(Math.random() * (this.max - this.min)) + this.min;
-	};
-	this.changeColor = function(newColor) {
+};
+
+NumGenerator.prototype.changeColor = function(newColor) {
 		this.fillColor = newColor;
-	};
-	this.changeXY = function(newX, newY){
+};
+
+NumGenerator.prototype.changeXY = function(newX, newY){
 		this.x = newX;
 		this.y = newY;
-	};
-	this.changeMin = function(newMin){
-		this.min = newMin;
-	};
+};
 
-	this.changeMax = function(newMax){
+NumGenerator.prototype.changeMin = function(newMin){
+		this.min = newMin;
+};
+
+NumGenerator.prototype.changeMax = function(newMax){
 		this.max = newMax;
-	};
-}
+};
+
 
 function Item(name, price, abbrev, color){
 	//Defines what is an item
@@ -233,8 +236,9 @@ function Item(name, price, abbrev, color){
 	this.price = price; //Price of the item, which is only relevant if the item is in the store
 	this.abbrev = abbrev; //Abbreviaton of the item that will show on the canvas
 	this.color = color; //The unique color that signifies what item that is current being viewed
+}
 
-	this.render = function(startXCor, startYCor, sideLength, isStore){
+Item.prototype.render = function(startXCor, startYCor, sideLength, isStore){
 		context.fillStyle = this.color;
 		context.textAlign = "center";
 		context.fillRect(startXCor , startYCor, sideLength, sideLength);
@@ -242,9 +246,8 @@ function Item(name, price, abbrev, color){
 		context.font = "bold 12pt sans-serif";
 		context.textAlign = "center";
 		context.fillStyle = "black";
-		context.fillText(abbrev, startXCor + sideLength / 2, startYCor + sideLength / 2);
-	};
-}
+		context.fillText(this.abbrev, startXCor + sideLength / 2, startYCor + sideLength / 2);
+};
 
 function ItemStorage(name, maxHold){
 	//Defines what is an item storage object
@@ -257,8 +260,9 @@ function ItemStorage(name, maxHold){
 	this.availableItems = {};
 	this.availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow");
 	this.availableItems.changeColor = new Item("Change Color", 10, "CC", "orange");
+}
 
-	this.render = function() {
+ItemStorage.prototype.render = function() {
 		//Rendering of the skeleton of the storage
 		var startYCor = canvas.height * 15 / 16 - this.sideLength;
 		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
@@ -266,9 +270,9 @@ function ItemStorage(name, maxHold){
 		context.font = "bold 12pt sans-serif";
 		context.textAlign = "left";
 		context.fillStyle = "black";
-		context.fillText(name, startXCor, startYCor - canvas.height / 32);
+		context.fillText(this.name, startXCor, startYCor - canvas.height / 32);
 
-		for (i = 0; i < maxHold; i++){
+		for (i = 0; i < this.maxHold; i++){
 			context.lineWidth = 1;
 			context.fillStyle = "black";
 			context.textAlign = "center";
@@ -293,31 +297,30 @@ function ItemStorage(name, maxHold){
 
 			startXCor += this.sideLength;
 		}
-	};
+};
 
-	this.clearRender = function() {
+ItemStorage.prototype.clearRender = function() {
 		//Clears the rendering of the skeleton of the storage
 		var startYCor = canvas.height * 15 / 16 - this.sideLength;
 		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
 
 		context.clearRect(startXCor, startYCor, this.sideLength * this.maxHold, this.sideLength);
-	};
+};
 
-	this.lessItem = function(itemNumber) {
+ItemStorage.prototype.lessItem = function(itemNumber) {
 		//Removes an item from the set
 		if (this.set.length === 0){
 			alert("you don't have any item.");
 		} else {
 			this.set.splice(itemNumber, 1);
 		}
-	};
+};
 
-	this.addItem = function(item) {
+ItemStorage.prototype.addItem = function(item) {
 		//Adds an item to the set
-		if (this.set.length === maxHold) {
+		if (this.set.length === this.maxHold) {
 			alert("you have don't have any room.");
 		} else {
 			this.set.push(item);
-		}
-	};
-}
+	}
+};
