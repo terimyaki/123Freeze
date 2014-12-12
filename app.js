@@ -26,14 +26,15 @@ function initialize(){
 	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
 	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
 	gameObjects.speed = new Speed();
-	gameObjects.inventory = new ItemStorage('Inventory', 5);
+	gameObjects.inventory = new ItemStorage('Inventory [I]', 5, 0, 0, canvas.width, canvas.height);
 	gameObjects.inventory.isRender = true;
-	gameObjects.store = new ItemStorage('Store', 6);
-	for (i=0; i < gameObjects.store.maxHold; i++){
-		gameObjects.store.addItem(Object.keys(gameObjects.store.availableItems)[Math.floor(Math.random() * Object.keys(gameObjects.store.availableItems).length)]);
-	}
 	gameObjects.victoryPoints = 0;
 	gameObjects.money = 0;
+	gameObjects.store = new ItemStorage("Store [S]", 6, 0, 0, canvas.width, canvas.height);
+	for (i=0; i < gameObjects.store.maxHold; i++){
+		gameObjects.store.addItem(gameObjects.store.generateRandomItem("either"));
+	}
+
 }
 
 function render(){
@@ -86,11 +87,8 @@ function render(){
 		context.fillText("Victory Points: " + gameObjects.victoryPoints, canvas.width * 15 / 16, canvas.height / 16);
 
 		//Render Inventory
-		if(gameObjects.inventory.isRender === true){
-			gameObjects.inventory.render();
-		} else if (gameObjects.store.isRender === true){
-			gameObjects.store.render();
-		}
+		gameObjects.inventory.render();
+		gameObjects.store.render();
 
 		//Context Restore
       	context.restore();
@@ -98,7 +96,7 @@ function render(){
 
 function checkKey(e){
 	e.preventDefault();
-	//Checks what Keys were pressed
+	//Checks what Keys were pressed 
 	switch (e.keyCode) {
 		case 32: //Spacebar
 			checksCollision();
@@ -170,11 +168,56 @@ function checksCollision(){
 	}
 }
 
-function Player(name){
-	this.name = name;
-	this.speed = new Speed();
-	this.inventory = new ItemStorage(5);
+function Game(){
+	this.toWin = 10;
+	this.targetNumber = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
+	this.store = new ItemStorage("Store [S]", 6, 0, 0, canvas.width, canvas.height);
+	this.playerList = {};
 }
+
+Game.prototype.initialize = function(){
+
+};
+
+Game.prototype.checksWin = function(player){
+	//Checks if the victory points of the player matches the goal
+	if(player.victoryPoints === this.toWin){
+		alert(player.name + " has won the game");
+		this.initialize();
+	}
+};
+
+Game.prototype.render = function(){
+
+};
+
+function Player(name, refXCor, refYCor, refXLength, refYLength){
+	this.name = name;
+	this.victoryPoints = 0;
+	this.money = 0;
+	this.speed = new Speed();
+	this.inventory = new ItemStorage("Inventory", 5);
+	this.refXCor = refXCor;
+	this.refYCor = refYCor;
+	this.refXLength = refXLength;
+	this.refYLength = refYLength;
+}
+
+Player.prototype.buyItem = function(store, itemNumber){
+	if (this.inventory.set.length < this.inventory.maxHold){
+		this.inventory.set.push(store.set[itemNumber]); // Adds item to the inventory
+	} else {
+
+	}
+};
+
+Player.prototype.useItem = function(itemNumber){
+	this.inventory.set[itemNumber].use(); //call the specific item's use function
+};
+
+Player.prototype.render = function(){
+
+};
 
 function Speed() {
 	this.multiplier = 1;
@@ -191,16 +234,16 @@ Speed.prototype.changeBase = function(newBase) {
 };
 
 Speed.prototype.changeTotalSpeed = function() {
-		this.totalSpeed = 1000 - this.base * (10 + this.multiplier);
+		this.totalSpeed = 1000 - this.multiplier * (10 + this.base);
 };
 
 Speed.prototype.getTotalSpeed = function(){
 		return this.totalSpeed;
 };
 
-function NumGenerator (x, y, min, max, font, fillColor) {
-	this.x = x;
-	this.y = y;
+function NumGenerator (refXCor, refYCor, min, max, font, fillColor) {
+	this.x = refXCor;
+	this.y = refYCor;
 	this.min = min;
 	this.max = max;
 	this.num = Math.floor(Math.random() * (max - min)) + min;
@@ -208,7 +251,7 @@ function NumGenerator (x, y, min, max, font, fillColor) {
 	this.fillColor = fillColor;
 }
 
-NumGenerator.prototype.changeNum= function(){
+NumGenerator.prototype.changeNum = function(){
 		this.num = Math.floor(Math.random() * (this.max - this.min)) + this.min;
 };
 
@@ -230,39 +273,169 @@ NumGenerator.prototype.changeMax = function(newMax){
 };
 
 
-function Item(name, price, abbrev, color){
+function Item(name, price, abbrev, color, type, use){
 	//Defines what is an item
 	this.name = name; //Name of the item
 	this.price = price; //Price of the item, which is only relevant if the item is in the store
 	this.abbrev = abbrev; //Abbreviaton of the item that will show on the canvas
 	this.color = color; //The unique color that signifies what item that is current being viewed
+	this.type = type; //Indicates whether this will help the player or hurt the player's chances
+	this.use = use; //This will be a function that will be executed when the item is used
 }
 
-Item.prototype.render = function(startXCor, startYCor, sideLength, isStore){
+Item.prototype.render = function(xCor, yCor, sideLength){
 		context.fillStyle = this.color;
 		context.textAlign = "center";
-		context.fillRect(startXCor , startYCor, sideLength, sideLength);
+		context.fillRect(xCor, yCor, sideLength, sideLength);
 
 		context.font = "bold 12pt sans-serif";
 		context.textAlign = "center";
 		context.fillStyle = "black";
-		context.fillText(this.abbrev, startXCor + sideLength / 2, startYCor + sideLength / 2);
+		context.fillText(this.abbrev, xCor + sideLength / 2, yCor + sideLength / 2);
 };
 
-function ItemStorage(name, maxHold){
+Item.prototype.renderPrice = function(startXCor, startYCor, sideLength){
+		context.font = "8pt sans-serif";
+		context.textAlign = "center";
+		context.fillStyle (this.price, xCor + sideLength / 2, yCor + sideLength * 5 / 8);
+};
+
+function ItemStorage(name, maxHold, refXCor, refYCor, refXLength, refYLength){
 	//Defines what is an item storage object
 	this.name = name; //Name of the storage
 	this.maxHold = maxHold; //Maximum Size of the storage
 	this.set = []; //What is currently in the storage
 	this.isRender = false; //Boolean of if the storage is currently being rendered on the canvas
-	this.sideLength = canvas.width / 8;
+	this.sideLength = refXLength / 8;
+	this.xCor = refXCor + (refXLength - this.sideLength * this.maxHold) / 2;
+	this.yCor = refYCor + refYLength * 15 / 16 - this.sideLength;
 
-	this.availableItems = {};
-	this.availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow");
-	this.availableItems.changeColor = new Item("Change Color", 10, "CC", "orange");
 }
 
 ItemStorage.prototype.render = function() {
+		//Rendering of the skeleton of the storage
+		var xCor = this.xCor;
+		var yCor = this.yCor;
+
+
+		if(this.isRender === true){
+			//Renders the name of the visible Storage
+			context.font = "bold 12pt sans-serif";
+			context.textAlign = "left";
+			context.fillStyle = "black";
+			context.fillText(this.name, this.xCor, this.yCor - canvas.height / 32);
+
+			for (i = 0; i < this.maxHold; i++){
+				context.lineWidth = 1;
+				context.fillStyle = "black";
+				context.strokeRect(xCor , yCor, this.sideLength, this.sideLength);
+
+				context.font = "bold 8pt sans-serif";
+				context.textAlign = "center";
+				context.fillStyle = "grey";
+				context.fillText(i + 1, xCor + this.sideLength / 2, yCor + this.sideLength + canvas.height / 32);
+
+				if (this.set[i] === undefined){
+					context.fillStyle = 'rgb(220,220,220)';
+					context.fillRect(xCor, yCor, this.sideLength, this.sideLength);
+
+					context.font = "bold 8pt sans-serif";
+					context.textAlign = "center";
+					context.fillStyle = "black";
+					context.fillText("no item", xCor + this.sideLength / 2, yCor + this.sideLength / 2);
+				} else {
+					this.set[i].render(xCor, yCor, this.sideLength);
+				}
+
+				xCor += this.sideLength;
+			}
+		} else {
+			//Renders the name of the non-visible Storage
+			context.font = "bold 12pt sans-serif";
+			context.textAlign = "left";
+			context.fillStyle = "gray";
+			context.fillText(this.name, this.xCor + this.sideLength * this.maxHold / 2, this.yCor - canvas.height / 32);
+		}
+
+};
+
+ItemStorage.prototype.clearRender = function() {
+		//Clears the rendering of the skeleton of the storage
+
+		context.clearRect(this.xCor, this.yCor, this.sideLength * this.maxHold, this.sideLength);
+};
+
+ItemStorage.prototype.lessItem = function(itemNumber) {
+		//Removes an item from the set
+		if (this.set.length === 0){
+			alert("you don't have any item.");
+		} else if (itemNumber < this.set.length) {
+			this.set.splice(itemNumber, 1);
+		}
+};
+
+ItemStorage.prototype.addItem = function(item) {
+		//Adds an item to the set
+		if (this.set.length === this.maxHold) {
+			alert("you have don't have any room.");
+		} else {
+			this.set.push(item);
+	}
+};
+
+ItemStorage.prototype.generateRandomItem = function(type){
+	//Generate either a bad or good item for either store or the game
+	var availableItems = {};
+	availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow", "good");
+	availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 30, "BS-", "blue", "good");
+	availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "bad");
+	availableItems.decreaseTargetRange = new Item("Decrease Target Range", 10, "TR-", "good");
+	availableItems.increaseTargetRange = new Item("Increase Target Range", undefined, "TR+", "bad");
+
+	/*var selection = [];
+
+	if (type === "good"){
+		for (i=0; i < Object.keys(availableItems).length; i++){
+			if (availableItems[Object.keys(availableItems)[i]].type === "good") {
+				selection.push(Object.keys(availableItems)[i]);
+			}
+		}
+	} else if (type === "bad"){
+		for (i=0; i < Object.keys(availableItems).length; i++){
+			if (availableItems[Object.keys(availableItems)[i]].type === "bad") {
+				selection.push(Object.keys(availableItems)[i]);
+			}
+		}
+	} else if (type === "either"){
+		for (i=0; i < Object.keys(availableItems).length; i++){
+			selection.push(Object.keys(availableItems)[i]);
+		}
+	}*/
+
+	var selection = Object.keys(availableItems);
+
+	return availableItems[selection[Math.floor(Math.random() * selection.length)]];
+};
+
+
+/*Store.prototype = new ItemStorage("Store", 6);
+
+Store.prototype.initialize = function(){
+	var availableItems = {};
+	availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow");
+	availableItems.changeColor = new Item("Change Color", 10, "CC", "orange");
+	for (i=0; i < this.maxHold; i++){
+		this.stock();
+	}
+};
+
+Store.prototype.stock = function(){
+	if (Store.set.length < Store.maxHold){
+		this.addItem(Object.keys(this.availableItems)[Math.floor(Math.random() * Object.keys(this.availableItems).length)]);
+	}
+};
+
+Store.prototype.render = function(){
 		//Rendering of the skeleton of the storage
 		var startYCor = canvas.height * 15 / 16 - this.sideLength;
 		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
@@ -293,34 +466,9 @@ ItemStorage.prototype.render = function() {
 				context.fillText("no item", startXCor + this.sideLength / 2, startYCor + this.sideLength / 2);
 			} else {
 				this.availableItems[this.set[i]].render(startXCor, startYCor, this.sideLength);
+				this.availableItems[this.set[i]].renderPrice(startXCor, startYCor, this.sideLength);
 			}
 
 			startXCor += this.sideLength;
 		}
-};
-
-ItemStorage.prototype.clearRender = function() {
-		//Clears the rendering of the skeleton of the storage
-		var startYCor = canvas.height * 15 / 16 - this.sideLength;
-		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
-
-		context.clearRect(startXCor, startYCor, this.sideLength * this.maxHold, this.sideLength);
-};
-
-ItemStorage.prototype.lessItem = function(itemNumber) {
-		//Removes an item from the set
-		if (this.set.length === 0){
-			alert("you don't have any item.");
-		} else {
-			this.set.splice(itemNumber, 1);
-		}
-};
-
-ItemStorage.prototype.addItem = function(item) {
-		//Adds an item to the set
-		if (this.set.length === this.maxHold) {
-			alert("you have don't have any room.");
-		} else {
-			this.set.push(item);
-	}
-};
+};*/
