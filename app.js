@@ -32,7 +32,7 @@ function initialize(){
 	gameObjects.money = 0;
 	gameObjects.store = new ItemStorage("Store [S]", 6, 0, 0, canvas.width, canvas.height);
 	for (i=0; i < gameObjects.store.maxHold; i++){
-		gameObjects.store.addItem(gameObjects.store.generateRandomItem("either"));
+		gameObjects.store.addItem(generateRandomItem("good"));
 	}
 
 }
@@ -383,39 +383,38 @@ ItemStorage.prototype.addItem = function(item) {
 	}
 };
 
-ItemStorage.prototype.generateRandomItem = function(type){
+function generateRandomItem (type){
 	//Generate either a bad or good item for either store or the game
-	var availableItems = {};
-	availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow", "good");
-	availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 30, "BS-", "blue", "good");
-	availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "bad");
-	availableItems.decreaseTargetRange = new Item("Decrease Target Range", 10, "TR-", "good");
-	availableItems.increaseTargetRange = new Item("Increase Target Range", undefined, "TR+", "bad");
+	return (function(){
 
-	/*var selection = [];
+		var availableItems = {};
+		availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow", "good", function(player){player.victoryPoints++});
+		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 30, "BS-", "blue", "good");
+		availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "orange", "bad");
+		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 10, "TR-", "green", "good");
+		availableItems.increaseTargetRange = new Item("Increase Target Range", undefined, "TR+", "pumpkin", "bad");
 
-	if (type === "good"){
-		for (i=0; i < Object.keys(availableItems).length; i++){
-			if (availableItems[Object.keys(availableItems)[i]].type === "good") {
-				selection.push(Object.keys(availableItems)[i]);
+		var selection = [];
+
+		if (type === "good"){
+			for (var i = 0; i < Object.keys(availableItems).length; i++){
+				if (availableItems[Object.keys(availableItems)[i]].type === "good") {
+					selection.push(Object.keys(availableItems)[i]);
+				}
 			}
-		}
-	} else if (type === "bad"){
-		for (i=0; i < Object.keys(availableItems).length; i++){
-			if (availableItems[Object.keys(availableItems)[i]].type === "bad") {
-				selection.push(Object.keys(availableItems)[i]);
+		} else if (type === "bad"){
+			for (var i = 0; i < Object.keys(availableItems).length; i++){
+				if (availableItems[Object.keys(availableItems)[i]].type === "bad") {
+					selection.push(Object.keys(availableItems)[i]);
+				}
 			}
+		} else if (type === "either"){
+			selection = Object.keys(availableItems);
 		}
-	} else if (type === "either"){
-		for (i=0; i < Object.keys(availableItems).length; i++){
-			selection.push(Object.keys(availableItems)[i]);
-		}
-	}*/
-
-	var selection = Object.keys(availableItems);
-
-	return availableItems[selection[Math.floor(Math.random() * selection.length)]];
-};
+		//var selection = Object.keys(availableItems);
+		return availableItems[selection[Math.floor(Math.random() * selection.length)]];
+	})();
+}
 
 
 /*Store.prototype = new ItemStorage("Store", 6);
