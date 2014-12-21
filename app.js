@@ -1,123 +1,51 @@
-var canvas,context;
-var gameObjects = {};
+var canvas,context, game;
 
 window.onload = function(){
 	canvas = document.getElementById('playArea');
 	context = canvas.getContext('2d');
-	initialize();
-	loop();
+	game = new Game();
+	game.initialize();
+	requestAnimFrame(game.render.bind(game));
 };
 
 window.addEventListener("keydown", checkKey, false);
 window.addEventListener("click", checkMouse, false);
 window.addEventListener("touchstart", checkTouch, false);
 
-function loop() {
-	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
-}
-
-function setRenderSpeed(){
-	clearInterval(rIntervalId);
-	rIntervalId = setInterval(render, gameObjects.speed.getTotalSpeed());
-}
-
-function initialize(){
-	// Creates all the game objects that will be used.
-	gameObjects.goal = new NumGenerator((canvas.width / 2),(canvas.height / 8), 0, 10, "bold 32pt sans-serif", "#696969");
-	gameObjects.match = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
-	gameObjects.speed = new Speed();
-	gameObjects.inventory = new ItemStorage('Inventory [I]', 5, 0, 0, canvas.width, canvas.height);
-	gameObjects.inventory.isRender = true;
-	gameObjects.victoryPoints = 0;
-	gameObjects.money = 0;
-	gameObjects.store = new ItemStorage("Store [S]", 6, 0, 0, canvas.width, canvas.height);
-	for (i=0; i < gameObjects.store.maxHold; i++){
-		gameObjects.store.addItem(generateRandomItem("good"));
-	}
-
-}
-
-function render(){
-		//This is the Looping function that renders the game
-
-		context.save();
-		contextClear();
-
-		gameObjects.match.changeNum();
-
-		//Creates the environment
-		context.lineWidth = 3;
-		context.fillStyle = "black";
-		context.strokeRect(canvas.width * 7 / 16 , canvas.height / 64, canvas.width / 8, canvas.width /8);
-
-		//Render Target
-		context.font = gameObjects.goal.font;
-		context.textAlign = "center";
-		context.fillStyle = gameObjects.goal.fillColor;
-		context.fillText(gameObjects.goal.num, gameObjects.goal.x, gameObjects.goal.y);
-		
-		//Render Match
-		context.font = gameObjects.match.font;
-    	context.textAlign = "center";
-    	context.fillStyle = gameObjects.match.fillColor;
-    	context.fillText(gameObjects.match.num, gameObjects.match.x, gameObjects.match.y);
-
-		//Render Multiplier
-		context.font = "bold 16pt sans-serif";
-		context.textAlign = "left";
-		context.fillStyle = "blue";
-		context.fillText("Multiplier: " + gameObjects.speed.multiplier + "x", canvas.width /16, canvas.height / 16);
-
-		//Render Base Speed
-		context.font = "bold 16pt sans-serif";
-		context.textAlign = "left";
-		context.fillStyle = "blue";
-		context.fillText("Base Speed: " + gameObjects.speed.base, canvas.width/16, canvas.height * 2 / 16);
-
-		//Render Money
-		context.font = "bold 16pt sans-serif";
-		context.textAlign = "right";
-		context.fillStyle = "blue";
-		context.fillText("Money: " + gameObjects.money, canvas.width * 15 / 16, canvas.height * 2 / 16);
-
-		//Render Victory Points
-		context.font = "bold 16pt sans-serif";
-		context.textAlign = "right";
-		context.fillStyle = "purple";
-		context.fillText("Victory Points: " + gameObjects.victoryPoints, canvas.width * 15 / 16, canvas.height / 16);
-
-		//Render Inventory
-		gameObjects.inventory.render();
-		gameObjects.store.render();
-
-		//Context Restore
-      	context.restore();
-}
+window.requestAnimFrame = function(){
+	return ( window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame    ||
+			window.oRequestAnimationFrame      ||
+			window.msRequestAnimationFrame     ||
+			function(/* function */ callback){
+				window.setTimeout(callback, 1000 / 60);
+			}
+	);
+}();
 
 function checkKey(e){
 	e.preventDefault();
 	//Checks what Keys were pressed 
 	switch (e.keyCode) {
 		case 32: //Spacebar
-			checksCollision();
+			game.checksCollision(game.playerOne);
 			break;
 		case 38: //Up key
-			if (gameObjects.speed.multiplier === -1){
-				gameObjects.speed.multiplier = 1;
+			if (game.playerOne.speed.multiplier === -1){
+				game.playerOne.speed.multiplier = 1;
 			} else {
-				gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier + 1);
+				game.playerOne.speed.changeMultiplier(game.playerOne.speed.multiplier + 1);
 			}
-			gameObjects.speed.changeTotalSpeed();
-			setRenderSpeed();
+			game.playerOne.speed.changeTotalSpeed();
 			break;
 		case 40: //Down key
-			if(gameObjects.speed.multiplier === 1){
-				gameObjects.speed.multiplier = 1;
+			if(game.playerOne.speed.multiplier === 1){
+				game.playerOne.speed.multiplier = 1;
 			} else {
-				gameObjects.speed.changeMultiplier(gameObjects.speed.multiplier - 1);
+				game.playerOne.speed.changeMultiplier(game.playerOne.speed.multiplier - 1);
 			}
-			gameObjects.speed.changeTotalSpeed();
-			setRenderSpeed();
+			game.playerOne.speed.changeTotalSpeed();
 			break;
 		case 73: //"i" key
 			if (gameObjects.store.isRender === true){
@@ -146,37 +74,25 @@ function checkMouse(e){
 	e = e || window.event;
 	var button = e.which || e.button;
 	if (button == 1) { //Checks if it is a left mouse button click
-		checksCollision();
+		game.checksCollision(game.playerOne);
 	}
 }
 
 function checkTouch(e){
 	//this handles the touch events
 	e.preventDefault();
-	checksCollision();
-}
-
-function contextClear(){
-	context.clearRect(0,0,canvas.width,canvas.height);
-}
-
-function checksCollision(){
-	//Checks if the target number was hit and what happens afterwards
-	if (gameObjects.goal.num === gameObjects.match.num) {
-		gameObjects.money += gameObjects.speed.multiplier;
-		gameObjects.goal.changeNum();
-	}
+	game.checksCollision(game.playerOne);
 }
 
 function Game(){
 	this.toWin = 10;
-	this.targetNumber = new NumGenerator((canvas.width / 2),(canvas.height / 2), 0, 10, "bold 64pt sans-serif", "black");
+	this.targetNumber = new NumGenerator((canvas.width / 2),(canvas.height * 9 / 64), 0, 10, "bold 48pt sans-serif", "red");
 	this.store = new ItemStorage("Store [S]", 6, 0, 0, canvas.width, canvas.height);
-	this.playerList = {};
+	this.playerOne = new Player("Bob", 0, 0, canvas.width, canvas.height);
+	this.playerOneLastTime = 0;
 }
 
 Game.prototype.initialize = function(){
-
 };
 
 Game.prototype.checksWin = function(player){
@@ -187,8 +103,37 @@ Game.prototype.checksWin = function(player){
 	}
 };
 
-Game.prototype.render = function(){
+Game.prototype.checksCollision = function(player){
+	//Checks if the target number was hit and what happens afterwards
+	if (player.number === this.targetNumber) {
+		player.money += player.speed.multiplier;
+		this.targetNumber.changeNum();
+	}
+};
 
+Game.prototype.render = function(currentTime){
+	//This is the Looping function that renders the game
+	context.save();
+	context.clearRect(0,0,canvas.width,canvas.height);
+
+	//Creates the environment
+	context.lineWidth = 3;
+	context.fillStyle = "black";
+	context.strokeRect(canvas.width * 7 / 16 , canvas.height / 64, canvas.width / 8, canvas.width /8);
+
+	//Render Target
+	context.font = this.targetNumber.font;
+	context.textAlign = "center";
+	context.fillStyle = this.targetNumber.fillColor;
+	context.fillText(this.targetNumber.num, this.targetNumber.x, this.targetNumber.y);
+	
+	this.playerOne.render();
+	this.playerOne.generateRandomNumber(currentTime);
+
+	//Context Restore
+    context.restore();
+
+	requestAnimFrame(this.render.bind(this));
 };
 
 function Player(name, refXCor, refYCor, refXLength, refYLength){
@@ -196,7 +141,9 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.victoryPoints = 0;
 	this.money = 0;
 	this.speed = new Speed();
-	this.inventory = new ItemStorage("Inventory", 5);
+	this.number = new NumGenerator(refXCor + (refXLength / 2),refYCor + (refYLength / 2), 0, 10, "bold 64pt sans-serif", "black");
+	this.inventory = new ItemStorage('Inventory [I]', 5, refXCor, refYCor, refXLength, refYLength);
+	this.lastCallTime = 0;
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
 	this.refXLength = refXLength;
@@ -216,13 +163,54 @@ Player.prototype.useItem = function(itemNumber){
 };
 
 Player.prototype.render = function(){
+		//Render Match
+		context.font = this.number.font;
+    	context.textAlign = "center";
+    	context.fillStyle = this.number.fillColor;
+    	context.fillText(this.number.num, this.number.x, this.number.y);
 
+		//Render Multiplier
+		context.font = "bold 16pt sans-serif";
+		context.textAlign = "left";
+		context.fillStyle = "blue";
+		context.fillText("Multiplier: " + this.speed.multiplier + "x", this.refXCor + (this.refXLength / 16), this.refYCor + (this.refYLength / 16));
+
+		//Render Base Speed
+		context.font = "bold 16pt sans-serif";
+		context.textAlign = "left";
+		context.fillStyle = "blue";
+		context.fillText("Base Speed: " + this.speed.base, this.refXCor + (this.refXLength / 16), this.refYCor + (this.refYLength * 2 / 16));
+
+		//Render Money
+		context.font = "bold 16pt sans-serif";
+		context.textAlign = "right";
+		context.fillStyle = "blue";
+		context.fillText("Money: " + this.money, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength * 2 / 16));
+
+		//Render Victory Points
+		context.font = "bold 16pt sans-serif";
+		context.textAlign = "right";
+		context.fillStyle = "purple";
+		context.fillText("Victory Points: " + this.victoryPoints, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength / 16));
+
+		//Render Inventory or Store
+};
+
+Player.prototype.generateRandomNumber = function (currentTime){
+	if ((currentTime - this.lastCallTime) >= (1 / this.speed.totalSpeed * 1000)) {
+		this.number.changeNum();
+		this.lastCallTime = currentTime;
+	}
+
+	console.log("Current Time: " + currentTime);
+	console.log("Last Call Time: " + this.lastCallTime);
+	console.log("This is Total Speed:" + this.speed.totalSpeed);
 };
 
 function Speed() {
 	this.multiplier = 1;
-	this.base = 10;
-	this.totalSpeed = 1000;
+	this.base = 1;
+	this.totalSpeed = 1;
 }
 
 Speed.prototype.changeMultiplier = function(newMultiplier) {
@@ -234,7 +222,7 @@ Speed.prototype.changeBase = function(newBase) {
 };
 
 Speed.prototype.changeTotalSpeed = function() {
-		this.totalSpeed = 1000 - this.multiplier * (10 + this.base);
+		this.totalSpeed = this.multiplier * this.base;
 };
 
 Speed.prototype.getTotalSpeed = function(){
@@ -411,7 +399,6 @@ function generateRandomItem (type){
 		} else if (type === "either"){
 			selection = Object.keys(availableItems);
 		}
-		//var selection = Object.keys(availableItems);
 		return availableItems[selection[Math.floor(Math.random() * selection.length)]];
 	})();
 }
