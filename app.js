@@ -48,21 +48,21 @@ function checkKey(e){
 			game.playerOne.speed.changeTotalSpeed();
 			break;
 		case 73: //"i" key
-			if (gameObjects.store.isRender === true){
-				gameObjects.store.isRender = false;
-				gameObjects.store.clearRender();
-				gameObjects.inventory.isRender = true;
+			if (game.playerOne.isStoreRendered === true){
+				game.playerOne.isStoreRendered = false;
+				game.store.clearRender();
+				game.playerOne.isInventoryRendered = true;
 			} else {
-				gameObjects.inventory.isRender = true;
+				game.playerOne.isInventoryRendered  = true;
 			}
 			break;
 		case 83: //"s" key
-			if (gameObjects.inventory.isRender === true){
-				gameObjects.inventory.isRender = false;
-				gameObjects.inventory.clearRender();
-				gameObjects.store.isRender = true;
+			if (game.playerOne.isInventoryRendered  === true){
+				game.playerOne.isInventoryRendered  = false;
+				game.playerOne.inventory.clearRender();
+				game.playerOne.isStoreRendered = true;
 			} else {
-				gameObjects.store.isRender = true;
+				game.playerOne.isStoreRendered = true;
 			}
 			break;
 	}
@@ -86,8 +86,8 @@ function checkTouch(e){
 
 function Game(){
 	this.toWin = 10;
-	this.targetNumber = new NumGenerator((canvas.width / 2),(canvas.height * 9 / 64), 0, 10, "bold 48pt sans-serif", "red");
-	this.store = new ItemStorage("Store [S]", 6, 0, 0, canvas.width, canvas.height);
+	this.targetNumber = new NumGenerator(0, 10);
+	this.store = new ItemStorage("Store [S]", 6);
 	this.playerOne = new Player("Bob", 0, 0, canvas.width, canvas.height);
 	this.playerOneLastTime = 0;
 }
@@ -105,7 +105,7 @@ Game.prototype.checksWin = function(player){
 
 Game.prototype.checksCollision = function(player){
 	//Checks if the target number was hit and what happens afterwards
-	if (player.number === this.targetNumber) {
+	if (player.number.num === this.targetNumber.num) {
 		player.money += player.speed.multiplier;
 		this.targetNumber.changeNum();
 	}
@@ -115,19 +115,8 @@ Game.prototype.render = function(currentTime){
 	//This is the Looping function that renders the game
 	context.save();
 	context.clearRect(0,0,canvas.width,canvas.height);
-
-	//Creates the environment
-	context.lineWidth = 3;
-	context.fillStyle = "black";
-	context.strokeRect(canvas.width * 7 / 16 , canvas.height / 64, canvas.width / 8, canvas.width /8);
-
-	//Render Target
-	context.font = this.targetNumber.font;
-	context.textAlign = "center";
-	context.fillStyle = this.targetNumber.fillColor;
-	context.fillText(this.targetNumber.num, this.targetNumber.x, this.targetNumber.y);
 	
-	this.playerOne.render();
+	this.playerOne.render(this.store, this.targetNumber);
 	this.playerOne.generateRandomNumber(currentTime);
 
 	//Context Restore
@@ -141,8 +130,10 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.victoryPoints = 0;
 	this.money = 0;
 	this.speed = new Speed();
-	this.number = new NumGenerator(refXCor + (refXLength / 2),refYCor + (refYLength / 2), 0, 10, "bold 64pt sans-serif", "black");
-	this.inventory = new ItemStorage('Inventory [I]', 5, refXCor, refYCor, refXLength, refYLength);
+	this.number = new NumGenerator(0, 10);
+	this.inventory = new ItemStorage('Inventory [I]', 5);
+	this.isInventoryRendered = true;
+	this.isStoreRendered = false;
 	this.lastCallTime = 0;
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
@@ -162,38 +153,45 @@ Player.prototype.useItem = function(itemNumber){
 	this.inventory.set[itemNumber].use(); //call the specific item's use function
 };
 
-Player.prototype.render = function(){
-		//Render Match
-		context.font = this.number.font;
-    	context.textAlign = "center";
-    	context.fillStyle = this.number.fillColor;
-    	context.fillText(this.number.num, this.number.x, this.number.y);
+Player.prototype.render = function(store, targetNumber){
+	//Creates the environment
+	context.lineWidth = 3;
+	context.fillStyle = "black";
+	context.strokeRect(this.refXCor + this.refXLength * 7 / 16 , this.refYCor + this.refYLength / 64, this.refXLength / 8, this.refXLength /8);
 
-		//Render Multiplier
-		context.font = "bold 16pt sans-serif";
-		context.textAlign = "left";
-		context.fillStyle = "blue";
-		context.fillText("Multiplier: " + this.speed.multiplier + "x", this.refXCor + (this.refXLength / 16), this.refYCor + (this.refYLength / 16));
+	//Render Target Number
+	targetNumber.render(this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 9 / 64, "bold 48pt sans-serif", "red");
 
-		//Render Base Speed
-		context.font = "bold 16pt sans-serif";
-		context.textAlign = "left";
-		context.fillStyle = "blue";
-		context.fillText("Base Speed: " + this.speed.base, this.refXCor + (this.refXLength / 16), this.refYCor + (this.refYLength * 2 / 16));
+	//Render Match MNumber
+	this.number.render(this.refXCor + (this.refXLength / 2), this.refYCor + (this.refYLength / 2), "bold 64pt sans-serif", "black");
 
-		//Render Money
-		context.font = "bold 16pt sans-serif";
-		context.textAlign = "right";
-		context.fillStyle = "blue";
-		context.fillText("Money: " + this.money, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength * 2 / 16));
+	//Render Multiplier
+	context.font = "bold 16pt sans-serif";
+	context.textAlign = "left";
+	context.fillStyle = "blue";
+	context.fillText("Multiplier: " + this.speed.multiplier + "x", this.refXCor + (this.refXLength / 16), this.refYCor + (this.refYLength / 16));
 
-		//Render Victory Points
-		context.font = "bold 16pt sans-serif";
-		context.textAlign = "right";
-		context.fillStyle = "purple";
-		context.fillText("Victory Points: " + this.victoryPoints, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength / 16));
+	//Render Base Speed
+	context.font = "bold 16pt sans-serif";
+	context.textAlign = "left";
+	context.fillStyle = "blue";
+	context.fillText("Base Speed: " + this.speed.base, this.refXCor + (this.refXLength / 16), this.refYCor + (this.refYLength * 2 / 16));
 
-		//Render Inventory or Store
+	//Render Money
+	context.font = "bold 16pt sans-serif";
+	context.textAlign = "right";
+	context.fillStyle = "blue";
+	context.fillText("Money: " + this.money, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength * 2 / 16));
+
+	//Render Victory Points
+	context.font = "bold 16pt sans-serif";
+	context.textAlign = "right";
+	context.fillStyle = "purple";
+	context.fillText("Victory Points: " + this.victoryPoints, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength / 16));
+
+	//Render Inventory or Store
+	this.inventory.render(this.isInventoryRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
+	this.renderStore(store);
 };
 
 Player.prototype.generateRandomNumber = function (currentTime){
@@ -201,10 +199,10 @@ Player.prototype.generateRandomNumber = function (currentTime){
 		this.number.changeNum();
 		this.lastCallTime = currentTime;
 	}
+};
 
-	console.log("Current Time: " + currentTime);
-	console.log("Last Call Time: " + this.lastCallTime);
-	console.log("This is Total Speed:" + this.speed.totalSpeed);
+Player.prototype.renderStore = function(store){
+	store.render(this.isStoreRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 };
 
 function Speed() {
@@ -229,14 +227,10 @@ Speed.prototype.getTotalSpeed = function(){
 		return this.totalSpeed;
 };
 
-function NumGenerator (refXCor, refYCor, min, max, font, fillColor) {
-	this.x = refXCor;
-	this.y = refYCor;
+function NumGenerator (min, max) {
 	this.min = min;
 	this.max = max;
 	this.num = Math.floor(Math.random() * (max - min)) + min;
-	this.font = font;
-	this.fillColor = fillColor;
 }
 
 NumGenerator.prototype.changeNum = function(){
@@ -247,17 +241,21 @@ NumGenerator.prototype.changeColor = function(newColor) {
 		this.fillColor = newColor;
 };
 
-NumGenerator.prototype.changeXY = function(newX, newY){
-		this.x = newX;
-		this.y = newY;
-};
-
 NumGenerator.prototype.changeMin = function(newMin){
 		this.min = newMin;
 };
 
 NumGenerator.prototype.changeMax = function(newMax){
 		this.max = newMax;
+};
+
+NumGenerator.prototype.render = function(refXCor, refYCor, font, fillColor){
+
+	//Render Target
+	context.font = font;
+	context.textAlign = "center";
+	context.fillStyle = fillColor;
+	context.fillText(this.num, refXCor, refYCor);
 };
 
 
@@ -288,69 +286,67 @@ Item.prototype.renderPrice = function(startXCor, startYCor, sideLength){
 		context.fillStyle (this.price, xCor + sideLength / 2, yCor + sideLength * 5 / 8);
 };
 
-function ItemStorage(name, maxHold, refXCor, refYCor, refXLength, refYLength){
+function ItemStorage(name, maxHold){
 	//Defines what is an item storage object
 	this.name = name; //Name of the storage
 	this.maxHold = maxHold; //Maximum Size of the storage
 	this.set = []; //What is currently in the storage
-	this.isRender = false; //Boolean of if the storage is currently being rendered on the canvas
-	this.sideLength = refXLength / 8;
-	this.xCor = refXCor + (refXLength - this.sideLength * this.maxHold) / 2;
-	this.yCor = refYCor + refYLength * 15 / 16 - this.sideLength;
-
 }
 
-ItemStorage.prototype.render = function() {
+ItemStorage.prototype.render = function(isRender, refXCor, refYCor, refXLength, refYLength) {
 		//Rendering of the skeleton of the storage
-		var xCor = this.xCor;
-		var yCor = this.yCor;
+		var sideLength = refXLength / 8;
+		var xCor = refXCor + (refXLength - sideLength * this.maxHold) / 2;
+		var yCor = refYCor + refYLength * 15 / 16 - sideLength;
 
-
-		if(this.isRender === true){
+		if(isRender){
 			//Renders the name of the visible Storage
 			context.font = "bold 12pt sans-serif";
 			context.textAlign = "left";
 			context.fillStyle = "black";
-			context.fillText(this.name, this.xCor, this.yCor - canvas.height / 32);
+			context.fillText(this.name, xCor, yCor - canvas.height / 32);
 
 			for (i = 0; i < this.maxHold; i++){
 				context.lineWidth = 1;
 				context.fillStyle = "black";
-				context.strokeRect(xCor , yCor, this.sideLength, this.sideLength);
+				context.strokeRect(xCor , yCor, sideLength, sideLength);
 
 				context.font = "bold 8pt sans-serif";
 				context.textAlign = "center";
 				context.fillStyle = "grey";
-				context.fillText(i + 1, xCor + this.sideLength / 2, yCor + this.sideLength + canvas.height / 32);
+				context.fillText(i + 1, xCor + sideLength / 2, yCor + sideLength + canvas.height / 32);
 
 				if (this.set[i] === undefined){
 					context.fillStyle = 'rgb(220,220,220)';
-					context.fillRect(xCor, yCor, this.sideLength, this.sideLength);
+					context.fillRect(xCor, yCor, sideLength, sideLength);
 
 					context.font = "bold 8pt sans-serif";
 					context.textAlign = "center";
 					context.fillStyle = "black";
-					context.fillText("no item", xCor + this.sideLength / 2, yCor + this.sideLength / 2);
+					context.fillText("no item", xCor + sideLength / 2, yCor + sideLength / 2);
 				} else {
-					this.set[i].render(xCor, yCor, this.sideLength);
+					this.set[i].render(xCor, yCor, sideLength);
 				}
 
-				xCor += this.sideLength;
+				xCor += sideLength;
 			}
 		} else {
 			//Renders the name of the non-visible Storage
 			context.font = "bold 12pt sans-serif";
 			context.textAlign = "left";
 			context.fillStyle = "gray";
-			context.fillText(this.name, this.xCor + this.sideLength * this.maxHold / 2, this.yCor - canvas.height / 32);
+			context.fillText(this.name, xCor + sideLength * this.maxHold / 2, yCor - canvas.height / 32);
 		}
 
 };
 
-ItemStorage.prototype.clearRender = function() {
+ItemStorage.prototype.clearRender = function(refXCor, refYCor, refXLength, refYLength) {
 		//Clears the rendering of the skeleton of the storage
+		var sideLength = refXLength / 8;
+		var xCor = refXCor + (refXLength - sideLength * this.maxHold) / 2;
+		var yCor = refYCor + refYLength * 15 / 16 - sideLength;
 
-		context.clearRect(this.xCor, this.yCor, this.sideLength * this.maxHold, this.sideLength);
+		context.clearRect(xCor, yCor, sideLength * this.maxHold, sideLength);
 };
 
 ItemStorage.prototype.lessItem = function(itemNumber) {
