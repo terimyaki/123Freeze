@@ -93,6 +93,9 @@ function Game(){
 }
 
 Game.prototype.initialize = function(){
+	for (var i = 0; i < this.store.maxHold; i++){
+		this.store.set.push(generateRandomItem("good"));
+	}
 };
 
 Game.prototype.checksWin = function(player){
@@ -116,7 +119,7 @@ Game.prototype.render = function(currentTime){
 	context.save();
 	context.clearRect(0,0,canvas.width,canvas.height);
 	
-	this.playerOne.render(this.store, this.targetNumber);
+	this.playerOne.render(this.store, this.targetNumber, currentTime);
 	this.playerOne.generateRandomNumber(currentTime);
 
 	//Context Restore
@@ -131,10 +134,12 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.money = 0;
 	this.speed = new Speed();
 	this.number = new NumGenerator(0, 10);
+	this.lastCallTime = 0;
 	this.inventory = new ItemStorage('Inventory [I]', 5);
 	this.isInventoryRendered = true;
 	this.isStoreRendered = false;
-	this.lastCallTime = 0;
+	this.isError = false;
+	this.lastErrorCall = 0;
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
 	this.refXLength = refXLength;
@@ -142,10 +147,11 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 }
 
 Player.prototype.buyItem = function(store, itemNumber){
-	if (this.inventory.set.length < this.inventory.maxHold){
-		this.inventory.set.push(store.set[itemNumber]); // Adds item to the inventory
-	} else {
-
+	if (this.inventory.set.length < this.inventory.maxHold && this.money >= store.set[itemNumber - 1]){
+		this.inventory.set.push(store.set[itemNumber - 1]); // Adds item to the inventory
+		this.money -= store.set[itemNumber - 1].price;
+		store.set.splice(itemNumber - 1, 1);
+		store.push(generateRandomItem("good"));
 	}
 };
 
@@ -153,7 +159,7 @@ Player.prototype.useItem = function(itemNumber){
 	this.inventory.set[itemNumber].use(); //call the specific item's use function
 };
 
-Player.prototype.render = function(store, targetNumber){
+Player.prototype.render = function(store, targetNumber, currentTime){
 	//Creates the environment
 	context.lineWidth = 3;
 	context.fillStyle = "black";
@@ -189,6 +195,9 @@ Player.prototype.render = function(store, targetNumber){
 	context.fillStyle = "purple";
 	context.fillText("Victory Points: " + this.victoryPoints, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength / 16));
 
+	//Render any Error Messages
+
+
 	//Render Inventory or Store
 	this.inventory.render(this.isInventoryRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 	this.renderStore(store);
@@ -203,6 +212,14 @@ Player.prototype.generateRandomNumber = function (currentTime){
 
 Player.prototype.renderStore = function(store){
 	store.render(this.isStoreRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
+};
+
+Player.prototype.renderError  = function(message, refXCor, refYCor){
+
+	context.font = "bold 8pt sans-serif";
+	context.textAlign = "center";
+	context.fillStyle = "red";
+	context.fillText(message, this.refXCor, this.refYCor);
 };
 
 function Speed() {
