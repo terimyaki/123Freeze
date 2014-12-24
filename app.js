@@ -65,7 +65,21 @@ function checkKey(e){
 				game.playerOne.isStoreRendered = true;
 			}
 			break;
-	}
+		case 49: //"1" key
+			if(game.playerOne){
+
+			}
+			break;
+		case 50: //"2" key
+			break;
+		case 51: //"3" key
+			break;
+		case 52: //"4" key
+			break;
+		case 53: //"5" key
+			break;
+		case 54: //"6" key
+			break;
 }
 
 function checkMouse(e){
@@ -93,6 +107,9 @@ function Game(){
 }
 
 Game.prototype.initialize = function(){
+	for (var i = 0; i < this.store.maxHold; i++){
+		this.store.set.push(generateRandomItem("good"));
+	}
 };
 
 Game.prototype.checksWin = function(player){
@@ -108,6 +125,8 @@ Game.prototype.checksCollision = function(player){
 	if (player.number.num === this.targetNumber.num) {
 		player.money += player.speed.multiplier;
 		this.targetNumber.changeNum();
+	} else {
+		//Pause the generating of random numbers
 	}
 };
 
@@ -116,7 +135,7 @@ Game.prototype.render = function(currentTime){
 	context.save();
 	context.clearRect(0,0,canvas.width,canvas.height);
 	
-	this.playerOne.render(this.store, this.targetNumber);
+	this.playerOne.render(this.store, this.targetNumber, currentTime);
 	this.playerOne.generateRandomNumber(currentTime);
 
 	//Context Restore
@@ -131,10 +150,15 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.money = 0;
 	this.speed = new Speed();
 	this.number = new NumGenerator(0, 10);
+	this.lastCallTime = 0;
 	this.inventory = new ItemStorage('Inventory [I]', 5);
 	this.isInventoryRendered = true;
 	this.isStoreRendered = false;
-	this.lastCallTime = 0;
+	this.isNotify = false;
+	this.notifyMessage = "";
+	this.moodGood = false;
+	this.updateNotify = false;
+	this.lastNotifyCall = 0;
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
 	this.refXLength = refXLength;
@@ -142,18 +166,27 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 }
 
 Player.prototype.buyItem = function(store, itemNumber){
-	if (this.inventory.set.length < this.inventory.maxHold){
-		this.inventory.set.push(store.set[itemNumber]); // Adds item to the inventory
-	} else {
-
+	if (this.inventory.set.length < this.inventory.maxHold && this.money >= store.set[itemNumber - 1]){
+		this.inventory.set.push(store.set[itemNumber - 1]); // Adds item to the inventory
+		this.money -= store.set[itemNumber - 1].price;
+		store.set.splice(itemNumber - 1, 1);
+		store.push(generateRandomItem("good"));
 	}
 };
 
 Player.prototype.useItem = function(itemNumber){
-	this.inventory.set[itemNumber].use(); //call the specific item's use function
+	if(this.inventory.set[itemNumber - 1] === "undefined"){
+		this.setNotify("There is nothing in that slot.", false);
+		return false;
+	} else if(typeof this.inventory.set[itemNumber - 1].use(this) === "string"){
+		this.setNotify(this.inventory.set[itemNumber - 1].use(this), false);
+		return false;
+	} else {
+		this.inventory.set[itemNumber - 1].user(this); //call the specific item's use function
+	}
 };
 
-Player.prototype.render = function(store, targetNumber){
+Player.prototype.render = function(store, targetNumber, currentTime){
 	//Creates the environment
 	context.lineWidth = 3;
 	context.fillStyle = "black";
@@ -189,6 +222,9 @@ Player.prototype.render = function(store, targetNumber){
 	context.fillStyle = "purple";
 	context.fillText("Victory Points: " + this.victoryPoints, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength / 16));
 
+	//Render any Error Messages
+	this.renderNotify(currentTime);
+
 	//Render Inventory or Store
 	this.inventory.render(this.isInventoryRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 	this.renderStore(store);
@@ -203,6 +239,36 @@ Player.prototype.generateRandomNumber = function (currentTime){
 
 Player.prototype.renderStore = function(store){
 	store.render(this.isStoreRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
+};
+
+Player.prototype.renderNotify  = function(currentTime){
+	if(this.isNotify === true){
+		if(this.updateNotify === true){
+			this.lastNotifyCall = currentTime;
+		}
+
+		if (currentTime - this.lastNotifyCall < 5000){
+			if(this.moodGood === true){
+				context.fillStyle = 'rgb(0,250,154)'; // mediumspringgreen  #00FA9A
+			} else {
+				context.fillStyle = 'rgb(250,0,96)'; // complimentary color to mediumspringgreen  #FA0060
+			}
+			context.fillRect(this.refXCor + this.refXLength / 2 - context.measureText(this.notifyMessage).width / 2, this.refYCor + this.refYLength * 13 / 16 - this.refXLength / 8, context.measureText(this.notifyMessage).width, this.refYLength / 8);
+
+			context.font = "bold 8pt sans-serif";
+			context.textAlign = "center";
+			context.fillStyle = "black";
+			context.fillText(this.notifyMessage, this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 13 / 16 - this.refXLength / 8);
+		}
+	}
+
+};
+
+Player.prototype.setNotify = function(message, moodGood){
+	this.notifyMessage = message;
+	this.moodGood = moodGood;
+	this.isNotify = true;
+	this.updateNotify = true;
 };
 
 function Speed() {
@@ -372,8 +438,13 @@ function generateRandomItem (type){
 	return (function(){
 
 		var availableItems = {};
-		availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow", "good", function(player){player.victoryPoints++});
-		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 30, "BS-", "blue", "good");
+		availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow", "special", function(player){player.victoryPoints++});
+		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 30, "BS-", "blue", "good", function(player){
+											if(player.speed.base > 1){
+												player.speed.base--;
+											} else{
+												return "Base Speed cannot be reduced further.";
+											}});
 		availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "orange", "bad");
 		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 10, "TR-", "green", "good");
 		availableItems.increaseTargetRange = new Item("Increase Target Range", undefined, "TR+", "pumpkin", "bad");
@@ -392,65 +463,11 @@ function generateRandomItem (type){
 					selection.push(Object.keys(availableItems)[i]);
 				}
 			}
+		} else if (type === "special"){
+			selection = selection.push("victoryPoints");
 		} else if (type === "either"){
 			selection = Object.keys(availableItems);
 		}
 		return availableItems[selection[Math.floor(Math.random() * selection.length)]];
 	})();
 }
-
-
-/*Store.prototype = new ItemStorage("Store", 6);
-
-Store.prototype.initialize = function(){
-	var availableItems = {};
-	availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow");
-	availableItems.changeColor = new Item("Change Color", 10, "CC", "orange");
-	for (i=0; i < this.maxHold; i++){
-		this.stock();
-	}
-};
-
-Store.prototype.stock = function(){
-	if (Store.set.length < Store.maxHold){
-		this.addItem(Object.keys(this.availableItems)[Math.floor(Math.random() * Object.keys(this.availableItems).length)]);
-	}
-};
-
-Store.prototype.render = function(){
-		//Rendering of the skeleton of the storage
-		var startYCor = canvas.height * 15 / 16 - this.sideLength;
-		var startXCor = (canvas.width - this.sideLength * this.maxHold) / 2;
-
-		context.font = "bold 12pt sans-serif";
-		context.textAlign = "left";
-		context.fillStyle = "black";
-		context.fillText(this.name, startXCor, startYCor - canvas.height / 32);
-
-		for (i = 0; i < this.maxHold; i++){
-			context.lineWidth = 1;
-			context.fillStyle = "black";
-			context.textAlign = "center";
-			context.strokeRect(startXCor , startYCor, this.sideLength, this.sideLength);
-
-			context.font = "bold 8pt sans-serif";
-			context.textAlign = "center";
-			context.fillStyle = "grey";
-			context.fillText(i + 1, startXCor + this.sideLength / 2, startYCor + this.sideLength + canvas.height / 32);
-
-			if (this.set[i] === undefined){
-				context.fillStyle = 'rgb(220,220,220)';
-				context.fillRect(startXCor, startYCor, this.sideLength, this.sideLength);
-
-				context.font = "bold 8pt sans-serif";
-				context.textAlign = "center";
-				context.fillStyle = "black";
-				context.fillText("no item", startXCor + this.sideLength / 2, startYCor + this.sideLength / 2);
-			} else {
-				this.availableItems[this.set[i]].render(startXCor, startYCor, this.sideLength);
-				this.availableItems[this.set[i]].renderPrice(startXCor, startYCor, this.sideLength);
-			}
-
-			startXCor += this.sideLength;
-		}
-};*/
