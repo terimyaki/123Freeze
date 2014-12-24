@@ -127,7 +127,7 @@ Game.prototype.checksCollision = function(player){
 		player.money += player.speed.multiplier;
 		this.targetNumber.changeNum();
 	} else {
-		//Pause the generating of random numbers
+		player.updateWrong = true; //Lets the player know that they mismatched.
 	}
 };
 
@@ -147,21 +147,21 @@ Game.prototype.render = function(currentTime){
 
 function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.name = name;
-	this.victoryPoints = 0;
-	this.money = 0;
-	this.speed = new Speed();
-	this.number = new NumGenerator(0, 10);
-	this.lastCallTime = 0;
+	this.victoryPoints = 0; //Collect Victory Points for victory
+	this.money = 0; //Money is used for buying items and victory points from the store. This can be earned by getting a match with the target number.
+	this.speed = new Speed(); //Speed of which to generate a random number to match with the target number
+	this.number = new NumGenerator(0, 10);//Number that is used to match with the target number.
+	this.lastCallTime = 0; //Helps keep track of when a new number should be generated
+	this.updateWrong = false; //Lets the program know if the lastWrongTime needs to be updated 
+	this.lastWrongTime = 0;//Helps keep track of how long the pause should be for the mismatch
 	this.inventory = new ItemStorage('Inventory [I]', 5);
-	this.isInventoryRendered = true;
-	this.isStoreRendered = false;
-	this.isNotify = false;
-	this.notifyMessage = "";
-	this.moodGood = false;
-	this.updateNotify = false;
-	this.lastNotifyCall = 0;
-	this.isError = false;
-	this.lastErrorCall = 0;
+	this.isInventoryRendered = true;//Tracks if the inventory is being rendered
+	this.isStoreRendered = false;//Tracks if the store being rendered
+	this.isNotify = false;//Tracks if the error/notification is being rendered
+	this.notifyMessage = "";//Holds the error/notifcation message
+	this.moodGood = false;//Shows if the error/notification message is a good or a bad one
+	this.updateNotify = false; //Lets the program know if the lastNotifyCall time needs to be updated
+	this.lastNotifyCall = 0;//Helps keep track of how long the error/notification message should be rendered
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
 	this.refXLength = refXLength;
@@ -185,7 +185,7 @@ Player.prototype.useItem = function(itemNumber){
 		this.setNotify(this.inventory.set[itemNumber - 1].use(this), false);
 		return false;
 	} else {
-		this.inventory.set[itemNumber - 1].user(this); //call the specific item's use function
+		this.inventory.set[itemNumber - 1].use(this); //call the specific item's use function
 	}
 };
 
@@ -234,7 +234,12 @@ Player.prototype.render = function(store, targetNumber, currentTime){
 };
 
 Player.prototype.generateRandomNumber = function (currentTime){
-	if ((currentTime - this.lastCallTime) >= (1 / this.speed.totalSpeed * 1000)) {
+	if(this.updateWrong === true){
+		this.lastWrongTime = currentTime;
+		this.updateWrong = false;
+	} else if ((currentTime - this.lastWrongTime) < 3000){
+		// P-P-PAUSE
+	} else if ((currentTime - this.lastCallTime) >= (1 / this.speed.totalSpeed * 1000)) {
 		this.number.changeNum();
 		this.lastCallTime = currentTime;
 	}
@@ -248,6 +253,7 @@ Player.prototype.renderNotify  = function(currentTime){
 	if(this.isNotify === true){
 		if(this.updateNotify === true){
 			this.lastNotifyCall = currentTime;
+			this.updateNotify = false;
 		}
 
 		if (currentTime - this.lastNotifyCall < 5000){
@@ -262,6 +268,8 @@ Player.prototype.renderNotify  = function(currentTime){
 			context.textAlign = "center";
 			context.fillStyle = "black";
 			context.fillText(this.notifyMessage, this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 13 / 16 - this.refXLength / 8);
+		} else {
+			this.isNotify = false;
 		}
 	}
 
@@ -272,7 +280,7 @@ Player.prototype.setNotify = function(message, moodGood){
 	this.moodGood = moodGood;
 	this.isNotify = true;
 	this.updateNotify = true;
-}
+};
 
 Player.prototype.renderError  = function(message, refXCor, refYCor){
 
