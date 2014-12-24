@@ -1,4 +1,4 @@
-var canvas,context, game;
+var canvas,context,game;
 
 window.onload = function(){
 	canvas = document.getElementById('playArea');
@@ -80,6 +80,7 @@ function checkKey(e){
 			break;
 		case 54: //"6" key
 			break;
+		}
 }
 
 function checkMouse(e){
@@ -446,7 +447,6 @@ ItemStorage.prototype.addItem = function(item) {
 function generateRandomItem (type){
 	//Generate either a bad or good item for either store or the game
 	return (function(){
-
 		var availableItems = {};
 		availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow", "special", function(player){player.victoryPoints++});
 		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 30, "BS-", "blue", "good", function(player){
