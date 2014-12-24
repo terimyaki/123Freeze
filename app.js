@@ -159,6 +159,8 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.moodGood = false;
 	this.updateNotify = false;
 	this.lastNotifyCall = 0;
+	this.isError = false;
+	this.lastErrorCall = 0;
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
 	this.refXLength = refXLength;
@@ -269,6 +271,14 @@ Player.prototype.setNotify = function(message, moodGood){
 	this.moodGood = moodGood;
 	this.isNotify = true;
 	this.updateNotify = true;
+}
+
+Player.prototype.renderError  = function(message, refXCor, refYCor){
+
+	context.font = "bold 8pt sans-serif";
+	context.textAlign = "center";
+	context.fillStyle = "red";
+	context.fillText(message, this.refXCor, this.refYCor);
 };
 
 function Speed() {
