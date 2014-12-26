@@ -205,11 +205,7 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.inventory = new ItemStorage('Inventory [I]', 5);
 	this.isInventoryRendered = true;//Tracks if the inventory is being rendered
 	this.isStoreRendered = false;//Tracks if the store being rendered
-	this.isNotify = false;//Tracks if the error/notification is being rendered
-	this.notifyMessage = "";//Holds the error/notifcation message
-	this.moodGood = false;//Shows if the error/notification message is a good or a bad one
-	this.updateNotify = false; //Lets the program know if the lastNotifyCall time needs to be updated
-	this.lastNotifyCall = 0;//Helps keep track of how long the error/notification message should be rendered
+	this.notification = new Notification();
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
 	this.refXLength = refXLength;
@@ -218,24 +214,26 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 
 Player.prototype.buyItem = function(store, itemNumber){
 	if (this.inventory.set.length < this.inventory.maxHold && this.money >= store.set[itemNumber].price){
-		console.log("you are in the if statement");
 		this.inventory.set.push(store.set[itemNumber]); // Adds item to the inventory
 		this.money -= store.set[itemNumber].price;
+		this.notification.setNotify("You just bought item, " + store.set[itemNumber].name + ".", true);
 		if(store.set[itemNumber].name !== "Victory Points"){
 			store.set.splice(itemNumber, 1);
 			store.set.push(generateRandomItem("good"));
 		}
 	} else if (this.inventory.set.length < this.inventory.maxHold){
-		game.playerOne.setNotify("You do not have enough money.", false);
+		this.notification.setNotify("You do not have enough money.", false);
+	} else {
+		this.notification.setNotify("You do not have space in your inventory.", false);
 	}
 };
 
 Player.prototype.useItem = function(itemNumber){
 	if(this.inventory.set[itemNumber] === "undefined"){
-		this.setNotify("There is nothing in that slot.", false);
+		this.notification.setNotify("There is nothing in that slot.", false);
 		return false;
 	} else if(typeof this.inventory.set[itemNumber].use(this) === "string"){
-		this.setNotify(this.inventory.set[itemNumber].use(this), false);
+		this.notification.setNotify(this.inventory.set[itemNumber].use(this), false);
 		return false;
 	} else {
 		this.inventory.set[itemNumber].use(this); //call the specific item's use function
@@ -279,7 +277,7 @@ Player.prototype.render = function(store, targetNumber, currentTime){
 	context.fillText("Victory Points: " + this.victoryPoints, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength / 16));
 
 	//Render any Error Messages
-	this.renderNotify(currentTime);
+	this.notification.renderNotify(currentTime, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 
 	//Render Inventory or Store
 	this.inventory.render(this.isInventoryRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
@@ -302,39 +300,6 @@ Player.prototype.renderStore = function(store){
 	store.render(this.isStoreRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 };
 
-Player.prototype.renderNotify  = function(currentTime){
-	if(this.isNotify === true){
-		if(this.updateNotify === true){
-			this.lastNotifyCall = currentTime;
-			this.updateNotify = false;
-		}
-
-		if (currentTime - this.lastNotifyCall < 4000){
-			if(this.moodGood === true){
-				context.fillStyle = 'rgb(0,250,154)'; // mediumspringgreen  #00FA9A
-			} else {
-				context.fillStyle = 'rgb(250,0,96)'; // complimentary color to mediumspringgreen  #FA0060
-			}
-			context.fillRect(this.refXCor + this.refXLength / 2 - context.measureText(this.notifyMessage).width / 2, this.refYCor + this.refYLength * 13 / 16 - this.refXLength * 5 / 32, context.measureText(this.notifyMessage).width, this.refYLength * 3 / 64);
-
-			context.font = "bold 12pt sans-serif";
-			context.textAlign = "center";
-			context.fillStyle = "black";
-			context.fillText(this.notifyMessage, this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 13 / 16 - this.refXLength / 8);
-		} else {
-			this.isNotify = false;
-		}
-	}
-
-};
-
-Player.prototype.setNotify = function(message, moodGood){
-	this.notifyMessage = message;
-	this.moodGood = moodGood;
-	this.isNotify = true;
-	this.updateNotify = true;
-};
-
 function Notification() {
 	this.isNotify = false;//Tracks if the error/notification is being rendered
 	this.notifyMessage = "";//Holds the error/notification message
@@ -348,6 +313,32 @@ Notification.prototype.setNotify = function(message, moodGood){
 	this.moodGood = moodGood;
 	this.isNotify = true;
 	this.updateNotify = true;
+};
+
+Notification.prototype.renderNotify  = function(currentTime, refXCor, refYCor, refXLength, refYLength){
+	if(this.isNotify === true){
+		if(this.updateNotify === true){
+			this.lastNotifyCall = currentTime;
+			this.updateNotify = false;
+		}
+
+		if (currentTime - this.lastNotifyCall < 4000){
+			if(this.moodGood === true){
+				context.fillStyle = 'rgb(0,250,154)'; // mediumspringgreen  #00FA9A
+			} else {
+				context.fillStyle = 'rgb(250,0,96)'; // complimentary color to mediumspringgreen  #FA0060
+			}
+			context.fillRect(refXCor + refXLength / 2 - context.measureText(this.notifyMessage).width / 2, refYCor + refYLength * 13 / 16 - refXLength * 5 / 32, context.measureText(this.notifyMessage).width, refYLength * 3 / 64);
+
+			context.font = "bold 12pt sans-serif";
+			context.textAlign = "center";
+			context.fillStyle = "black";
+			context.fillText(this.notifyMessage, refXCor + refXLength / 2, refYCor + refYLength * 13 / 16 - refXLength / 8);
+		} else {
+			this.isNotify = false;
+		}
+	}
+
 };
 
 function Speed() {
@@ -515,15 +506,15 @@ function generateRandomItem (type){
 	//Generate either a bad or good item for either store or the game
 	return (function(){
 		var availableItems = {};
-		availableItems.victoryPoints = new Item("Victory Points", 50, "VP", "yellow", "special", function(player){player.victoryPoints++});
-		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 30, "BS-", "blue", "good", function(player){
+		availableItems.victoryPoints = new Item("Victory Points", 1, "VP", "yellow", "special", function(player){player.victoryPoints++});
+		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 6, "BS-", "blue", "good", function(player){
 											if(player.speed.base > 1){
 												player.speed.base--;
 											} else{
 												return "Base Speed cannot be reduced further.";
 											}});
 		availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "orange", "bad");
-		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 1, "TR-", "green", "good");
+		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 3, "TR-", "green", "good");
 		availableItems.increaseTargetRange = new Item("Increase Target Range", undefined, "TR+", "pumpkin", "bad");
 
 		var selection = [];
