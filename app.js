@@ -77,14 +77,10 @@ function checkKey(e){
 			break;
 		case 50: //"2" key
 			if(game.playerOne){
-				console.log("you are in playerOne");
 				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[1] !== undefined){
-					console.log("haha");
 					game.playerOne.useItem(1);
 				} else if (game.playerOne.isStoreRendered === true){
-					console.log("hehe");
 					game.playerOne.buyItem(game.store, 1);
-
 				}
 
 			}
@@ -147,9 +143,11 @@ function checkTouch(e){
 }
 
 function Game(){
-	this.toWin = 10;
+	this.toWin = 2;
 	this.targetNumber = new NumGenerator(0, 10);
 	this.store = new ItemStorage("Store [S]", 6);
+	this.numOfPlayers = 0;
+	this.players = [];
 	this.playerOne = new Player("Bob", 0, 0, canvas.width, canvas.height);
 	this.playerOneLastTime = 0;
 }
@@ -193,6 +191,10 @@ Game.prototype.render = function(currentTime){
 	requestAnimFrame(this.render.bind(this));
 };
 
+Game.prototype.reset = function(){
+
+};
+
 function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.name = name;
 	this.victoryPoints = 0; //Collect Victory Points for victory
@@ -217,7 +219,7 @@ Player.prototype.buyItem = function(store, itemNumber){
 		this.inventory.set.push(store.set[itemNumber]); // Adds item to the inventory
 		this.money -= store.set[itemNumber].price;
 		this.notification.setNotify("You just bought item, " + store.set[itemNumber].name + ".", true);
-		if(store.set[itemNumber].name !== "Victory Points"){
+		if(store.set[itemNumber].name !== "Increase Victory Points"){
 			store.set.splice(itemNumber, 1);
 			store.set.push(generateRandomItem("good"));
 		}
@@ -229,14 +231,20 @@ Player.prototype.buyItem = function(store, itemNumber){
 };
 
 Player.prototype.useItem = function(itemNumber){
-	if(this.inventory.set[itemNumber] === "undefined"){
-		this.notification.setNotify("There is nothing in that slot.", false);
-		return false;
-	} else if(typeof this.inventory.set[itemNumber].use(this) === "string"){
-		this.notification.setNotify(this.inventory.set[itemNumber].use(this), false);
-		return false;
+	if(this.inventory.set[itemNumber].use){
+		if(typeof this.inventory.set[itemNumber].use(this) === "string"){
+			this.notification.setNotify(this.inventory.set[itemNumber].use(this), false);
+		} else {
+			if(this.inventory.set[itemNumber].name === "Increase Victory Points"){
+				game.checksWin(this);
+			}
+			this.notification.setNotify("You just used item, " + this.inventory.set[itemNumber].name + " on " + this.inventory.set[itemNumber].target + ".", "true");
+			this.inventory.set.splice(itemNumber, 1);
+		}
+	} else if(this.inventory.set[itemNumber].use === undefined){
+		this.notification.setNotify("Cannot use item, " + this.inventory.set[itemNumber].name + ".", false);
 	} else {
-		this.inventory.set[itemNumber].use(this); //call the specific item's use function
+		console.log("some other problem, man");
 	}
 };
 
@@ -249,7 +257,7 @@ Player.prototype.render = function(store, targetNumber, currentTime){
 	//Render Target Number
 	targetNumber.render(this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 9 / 64, "bold 48pt sans-serif", "red");
 
-	//Render Match MNumber
+	//Render Match Number
 	this.number.render(this.refXCor + (this.refXLength / 2), this.refYCor + (this.refYLength / 2), "bold 64pt sans-serif", "black");
 
 	//Render Multiplier
@@ -394,11 +402,12 @@ NumGenerator.prototype.render = function(refXCor, refYCor, font, fillColor){
 };
 
 
-function Item(name, price, abbrev, color, type, use){
+function Item(name, price, abbrev, target, color, type, use){
 	//Defines what is an item
 	this.name = name; //Name of the item
 	this.price = price; //Price of the item, which is only relevant if the item is in the store
 	this.abbrev = abbrev; //Abbreviaton of the item that will show on the canvas
+	this.target = target; //Who you can use the item on
 	this.color = color; //The unique color that signifies what item that is current being viewed
 	this.type = type; //Indicates whether this will help the player or hurt the player's chances
 	this.use = use; //This will be a function that will be executed when the item is used
@@ -484,38 +493,24 @@ ItemStorage.prototype.clearRender = function(refXCor, refYCor, refXLength, refYL
 		context.clearRect(xCor, yCor, sideLength * this.maxHold, sideLength);
 };
 
-ItemStorage.prototype.lessItem = function(itemNumber) {
-		//Removes an item from the set
-		if (this.set.length === 0){
-			alert("you don't have any item.");
-		} else if (itemNumber < this.set.length) {
-			this.set.splice(itemNumber, 1);
-		}
-};
-
-ItemStorage.prototype.addItem = function(item) {
-		//Adds an item to the set
-		if (this.set.length === this.maxHold) {
-			alert("you have don't have any room.");
-		} else {
-			this.set.push(item);
-	}
-};
-
 function generateRandomItem (type){
 	//Generate either a bad or good item for either store or the game
 	return (function(){
 		var availableItems = {};
-		availableItems.victoryPoints = new Item("Victory Points", 1, "VP", "yellow", "special", function(player){player.victoryPoints++});
-		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 6, "BS-", "blue", "good", function(player){
+		availableItems.victoryPoints = new Item("Increase Victory Points", 1, "VP", "self", "yellow", "special", function(player){
+											player.victoryPoints++;
+											console.log("haha");});
+		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 1, "BS-", "self", "blue", "good", function(player){
 											if(player.speed.base > 1){
 												player.speed.base--;
-											} else{
+											} else {
 												return "Base Speed cannot be reduced further.";
 											}});
-		availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "orange", "bad");
-		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 3, "TR-", "green", "good");
-		availableItems.increaseTargetRange = new Item("Increase Target Range", undefined, "TR+", "pumpkin", "bad");
+		availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "self", "orange", "bad");
+		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 1, "TR-", "self", "green", "good");
+		availableItems.increaseTargetRange = new Item("Increase Target Range", 1, "TR+", "self", "pumpkin", "good");
+		availableItems.decreaseMatchRange = new Item("Decrease Match Range", 1, "MR-", "self", "brown", "good");
+		availableItems.increaseMatchRange = new Item("Increase Match Range", 1, "MR+", "self", "red", "good");
 
 		var selection = [];
 
@@ -524,7 +519,7 @@ function generateRandomItem (type){
 				if (availableItems[Object.keys(availableItems)[i]].type === "good") {
 					selection.push(Object.keys(availableItems)[i]);
 				}
-			}
+			}	
 		} else if (type === "bad"){
 			for (var i = 0; i < Object.keys(availableItems).length; i++){
 				if (availableItems[Object.keys(availableItems)[i]].type === "bad") {
