@@ -67,18 +67,65 @@ function checkKey(e){
 			break;
 		case 49: //"1" key
 			if(game.playerOne){
+				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[0] !== undefined){
+					game.playerOne.useItem(0);
+				} else if (game.playerOne.isStoreRendered === true){
+					game.playerOne.buyItem(game.store, 0);
+				}
 
 			}
 			break;
 		case 50: //"2" key
+			if(game.playerOne){
+				console.log("you are in playerOne");
+				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[1] !== undefined){
+					console.log("haha");
+					game.playerOne.useItem(1);
+				} else if (game.playerOne.isStoreRendered === true){
+					console.log("hehe");
+					game.playerOne.buyItem(game.store, 1);
+
+				}
+
+			}
 			break;
 		case 51: //"3" key
+			if(game.playerOne){
+				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[2] !== undefined){
+					game.playerOne.useItem(2);
+				} else if (game.playerOne.isStoreRendered === true){
+					game.playerOne.buyItem(game.store, 2);
+				}
+
+			}
 			break;
 		case 52: //"4" key
+			if(game.playerOne){
+				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[3] !== undefined){
+					game.playerOne.useItem(3);
+				} else if (game.playerOne.isStoreRendered === true){
+					game.playerOne.buyItem(game.store, 3);
+				}
+
+			}
 			break;
 		case 53: //"5" key
+			if(game.playerOne){
+				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[4] !== undefined){
+					game.playerOne.useItem(4);
+				} else if (game.playerOne.isStoreRendered === true){
+					game.playerOne.buyItem(game.store, 4);
+				}
+
+			}
 			break;
 		case 54: //"6" key
+			if(game.playerOne){
+				if (game.playerOne.isStoreRendered === true){
+					game.playerOne.buyItem(game.store, 5);
+				}
+
+			}
 			break;
 		}
 }
@@ -108,7 +155,8 @@ function Game(){
 }
 
 Game.prototype.initialize = function(){
-	for (var i = 0; i < this.store.maxHold; i++){
+	this.store.set.push(generateRandomItem("special"));
+	for (var i = 1; i < this.store.maxHold; i++){
 		this.store.set.push(generateRandomItem("good"));
 	}
 };
@@ -122,7 +170,7 @@ Game.prototype.checksWin = function(player){
 };
 
 Game.prototype.checksCollision = function(player){
-	//Checks if the target number was hit and what happens afterwards
+	//Checks if the target number and the player's number match
 	if (player.number.num === this.targetNumber.num) {
 		player.money += player.speed.multiplier;
 		this.targetNumber.changeNum();
@@ -169,23 +217,28 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 }
 
 Player.prototype.buyItem = function(store, itemNumber){
-	if (this.inventory.set.length < this.inventory.maxHold && this.money >= store.set[itemNumber - 1]){
-		this.inventory.set.push(store.set[itemNumber - 1]); // Adds item to the inventory
-		this.money -= store.set[itemNumber - 1].price;
-		store.set.splice(itemNumber - 1, 1);
-		store.push(generateRandomItem("good"));
+	if (this.inventory.set.length < this.inventory.maxHold && this.money >= store.set[itemNumber].price){
+		console.log("you are in the if statement");
+		this.inventory.set.push(store.set[itemNumber]); // Adds item to the inventory
+		this.money -= store.set[itemNumber].price;
+		if(store.set[itemNumber].name !== "Victory Points"){
+			store.set.splice(itemNumber, 1);
+			store.set.push(generateRandomItem("good"));
+		}
+	} else if (this.inventory.set.length < this.inventory.maxHold){
+		game.playerOne.setNotify("You do not have enough money.", false);
 	}
 };
 
 Player.prototype.useItem = function(itemNumber){
-	if(this.inventory.set[itemNumber - 1] === "undefined"){
+	if(this.inventory.set[itemNumber] === "undefined"){
 		this.setNotify("There is nothing in that slot.", false);
 		return false;
-	} else if(typeof this.inventory.set[itemNumber - 1].use(this) === "string"){
-		this.setNotify(this.inventory.set[itemNumber - 1].use(this), false);
+	} else if(typeof this.inventory.set[itemNumber].use(this) === "string"){
+		this.setNotify(this.inventory.set[itemNumber].use(this), false);
 		return false;
 	} else {
-		this.inventory.set[itemNumber - 1].use(this); //call the specific item's use function
+		this.inventory.set[itemNumber].use(this); //call the specific item's use function
 	}
 };
 
@@ -256,15 +309,15 @@ Player.prototype.renderNotify  = function(currentTime){
 			this.updateNotify = false;
 		}
 
-		if (currentTime - this.lastNotifyCall < 5000){
+		if (currentTime - this.lastNotifyCall < 4000){
 			if(this.moodGood === true){
 				context.fillStyle = 'rgb(0,250,154)'; // mediumspringgreen  #00FA9A
 			} else {
 				context.fillStyle = 'rgb(250,0,96)'; // complimentary color to mediumspringgreen  #FA0060
 			}
-			context.fillRect(this.refXCor + this.refXLength / 2 - context.measureText(this.notifyMessage).width / 2, this.refYCor + this.refYLength * 13 / 16 - this.refXLength / 8, context.measureText(this.notifyMessage).width, this.refYLength / 8);
+			context.fillRect(this.refXCor + this.refXLength / 2 - context.measureText(this.notifyMessage).width / 2, this.refYCor + this.refYLength * 13 / 16 - this.refXLength * 5 / 32, context.measureText(this.notifyMessage).width, this.refYLength * 3 / 64);
 
-			context.font = "bold 8pt sans-serif";
+			context.font = "bold 12pt sans-serif";
 			context.textAlign = "center";
 			context.fillStyle = "black";
 			context.fillText(this.notifyMessage, this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 13 / 16 - this.refXLength / 8);
@@ -282,12 +335,19 @@ Player.prototype.setNotify = function(message, moodGood){
 	this.updateNotify = true;
 };
 
-Player.prototype.renderError  = function(message, refXCor, refYCor){
+function Notification() {
+	this.isNotify = false;//Tracks if the error/notification is being rendered
+	this.notifyMessage = "";//Holds the error/notification message
+	this.moodGood = false;//Shows if the error/notification message is a good or a bad one
+	this.updateNotify = false; //Lets the program know if the lastNotifyCall time needs to be updated
+	this.lastNotifyCall = 0;//Helps keep track of how long the error/notification message should be rendered
+}
 
-	context.font = "bold 8pt sans-serif";
-	context.textAlign = "center";
-	context.fillStyle = "red";
-	context.fillText(message, this.refXCor, this.refYCor);
+Notification.prototype.setNotify = function(message, moodGood){
+	this.notifyMessage = message;
+	this.moodGood = moodGood;
+	this.isNotify = true;
+	this.updateNotify = true;
 };
 
 function Speed() {
@@ -335,7 +395,6 @@ NumGenerator.prototype.changeMax = function(newMax){
 };
 
 NumGenerator.prototype.render = function(refXCor, refYCor, font, fillColor){
-
 	//Render Target
 	context.font = font;
 	context.textAlign = "center";
@@ -456,7 +515,7 @@ function generateRandomItem (type){
 	//Generate either a bad or good item for either store or the game
 	return (function(){
 		var availableItems = {};
-		availableItems.victoryPoints = new Item("Victory Points", 20, "VP", "yellow", "special", function(player){player.victoryPoints++});
+		availableItems.victoryPoints = new Item("Victory Points", 50, "VP", "yellow", "special", function(player){player.victoryPoints++});
 		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 30, "BS-", "blue", "good", function(player){
 											if(player.speed.base > 1){
 												player.speed.base--;
@@ -464,7 +523,7 @@ function generateRandomItem (type){
 												return "Base Speed cannot be reduced further.";
 											}});
 		availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "orange", "bad");
-		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 10, "TR-", "green", "good");
+		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 1, "TR-", "green", "good");
 		availableItems.increaseTargetRange = new Item("Increase Target Range", undefined, "TR+", "pumpkin", "bad");
 
 		var selection = [];
@@ -482,7 +541,7 @@ function generateRandomItem (type){
 				}
 			}
 		} else if (type === "special"){
-			selection = selection.push("victoryPoints");
+			selection.push("victoryPoints");
 		} else if (type === "either"){
 			selection = Object.keys(availableItems);
 		}
