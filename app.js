@@ -144,7 +144,7 @@ function checkTouch(e){
 
 function Game(){
 	this.toWin = 2;
-	this.targetNumber = new NumGenerator(0, 10);
+	this.number = new NumGenerator(0, 10);
 	this.store = new ItemStorage("Store [S]", 6);
 	this.numOfPlayers = 0;
 	this.players = [];
@@ -153,9 +153,9 @@ function Game(){
 }
 
 Game.prototype.initialize = function(){
-	this.store.set.push(generateRandomItem("special"));
+	this.store.set.push(generateRandomItem("special", this.numOfPlayers));
 	for (var i = 1; i < this.store.maxHold; i++){
-		this.store.set.push(generateRandomItem("good"));
+		this.store.set.push(generateRandomItem("good", this.numOfPlayers));
 	}
 };
 
@@ -169,9 +169,9 @@ Game.prototype.checksWin = function(player){
 
 Game.prototype.checksCollision = function(player){
 	//Checks if the target number and the player's number match
-	if (player.number.num === this.targetNumber.num) {
+	if (player.number.num === this.number.num) {
 		player.money += player.speed.multiplier;
-		this.targetNumber.changeNum();
+		this.number.changeNum();
 	} else {
 		player.updateWrong = true; //Lets the player know that they mismatched.
 	}
@@ -182,7 +182,7 @@ Game.prototype.render = function(currentTime){
 	context.save();
 	context.clearRect(0,0,canvas.width,canvas.height);
 	
-	this.playerOne.render(this.store, this.targetNumber, currentTime);
+	this.playerOne.render(this.store, this.number, currentTime);
 	this.playerOne.generateRandomNumber(currentTime);
 
 	//Context Restore
@@ -192,7 +192,11 @@ Game.prototype.render = function(currentTime){
 };
 
 Game.prototype.reset = function(){
-
+	this.players = [];
+	this.numOfPlayers = 0;
+	this.number = new NumGenerator(0, 10);
+	this.store = new ItemStorage("Store [S]", 6);
+	this.initialize();
 };
 
 function Player(name, refXCor, refYCor, refXLength, refYLength){
@@ -221,7 +225,7 @@ Player.prototype.buyItem = function(store, itemNumber){
 		this.notification.setNotify("You just bought item, " + store.set[itemNumber].name + ".", true);
 		if(store.set[itemNumber].name !== "Increase Victory Points"){
 			store.set.splice(itemNumber, 1);
-			store.set.push(generateRandomItem("good"));
+			store.set.push(generateRandomItem("good", game.numOfPlayers));
 		}
 	} else if (this.inventory.set.length < this.inventory.maxHold){
 		this.notification.setNotify("You do not have enough money.", false);
@@ -232,13 +236,12 @@ Player.prototype.buyItem = function(store, itemNumber){
 
 Player.prototype.useItem = function(itemNumber){
 	if(this.inventory.set[itemNumber].use){
-		if(typeof this.inventory.set[itemNumber].use(this) === "string"){
-			this.notification.setNotify(this.inventory.set[itemNumber].use(this), false);
-		} else {
+		var results = this.inventory.set[itemNumber].use(this);
+		this.notification.setNotify(results[0], results[1]);
+		if(results[1] === true){
 			if(this.inventory.set[itemNumber].name === "Increase Victory Points"){
 				game.checksWin(this);
 			}
-			this.notification.setNotify("You just used item, " + this.inventory.set[itemNumber].name + " on " + this.inventory.set[itemNumber].target + ".", "true");
 			this.inventory.set.splice(itemNumber, 1);
 		}
 	} else if(this.inventory.set[itemNumber].use === undefined){
@@ -248,47 +251,73 @@ Player.prototype.useItem = function(itemNumber){
 	}
 };
 
-Player.prototype.render = function(store, targetNumber, currentTime){
+Player.prototype.render = function(store, number, currentTime){
+	var playerMetricX = this.refXCor + this.refXLength / 32;
+	var targetMetricX = this.refXCor + this.refXLength * 31 / 32;
+
 	//Creates the environment
 	context.lineWidth = 3;
 	context.fillStyle = "black";
-	context.strokeRect(this.refXCor + this.refXLength * 7 / 16 , this.refYCor + this.refYLength / 64, this.refXLength / 8, this.refXLength /8);
+	context.strokeRect(this.refXCor + this.refXLength * 7 / 16 , this.refYCor + this.refYLength / 64, this.refXLength / 8, this.refXLength / 8);
 
 	//Render Target Number
-	targetNumber.render(this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 9 / 64, "bold 48pt sans-serif", "red");
+	number.render(this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 7 / 64, "bold 48pt sans-serif", "red");
 
 	//Render Match Number
 	this.number.render(this.refXCor + (this.refXLength / 2), this.refYCor + (this.refYLength / 2), "bold 64pt sans-serif", "black");
 
-	//Render Multiplier
-	context.font = "bold 16pt sans-serif";
-	context.textAlign = "left";
-	context.fillStyle = "blue";
-	context.fillText("Multiplier: " + this.speed.multiplier + "x", this.refXCor + (this.refXLength / 16), this.refYCor + (this.refYLength / 16));
+	//Render Duration of the Game
+	context.font = "bold 24pt sans-serif";
+	context.fillStyle = "gray";
+	context.fillText(msToTime(currentTime), this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 15 / 64);
 
-	//Render Base Speed
+	//Render Title of Player's Metrics
 	context.font = "bold 16pt sans-serif";
-	context.textAlign = "left";
-	context.fillStyle = "blue";
-	context.fillText("Base Speed: " + this.speed.base, this.refXCor + (this.refXLength / 16), this.refYCor + (this.refYLength * 2 / 16));
+	context.fillStyle = "black";
+	context.fillText("Player's Metrics", this.refXCor + this.refXLength / 5, this.refYCor + this.refYLength / 32);
 
-	//Render Money
-	context.font = "bold 16pt sans-serif";
-	context.textAlign = "right";
-	context.fillStyle = "blue";
-	context.fillText("Money: " + this.money, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength * 2 / 16));
+	// //Render Title of Target Number's Metrics
+	context.fillText("Target's Metrics", this.refXCor + this.refXLength * 4 / 5 , this.refYCor + this.refYLength / 32);
 
 	//Render Victory Points
-	context.font = "bold 16pt sans-serif";
-	context.textAlign = "right";
+	context.font = "bold 14pt sans-serif";
+	context.textAlign = "left";
 	context.fillStyle = "purple";
-	context.fillText("Victory Points: " + this.victoryPoints, this.refXCor + (this.refXLength * 15 / 16), this.refYCor + (this.refYLength / 16));
+	context.fillText("Victory Points: " + this.victoryPoints, playerMetricX, this.refYCor + this.refYLength * 6 / 64);
+
+	//Render Money
+	context.fillStyle = "blue";
+	context.fillText("Money: " + this.money, playerMetricX, this.refYCor + this.refYLength * 9 / 64);
+
+	//Render Multiplier
+	context.fillText("Multiplier: " + this.speed.multiplier, playerMetricX, this.refYCor + this.refYLength * 12 / 64);
+
+	//Render Base Speed
+	context.fillText("Base Speed: " + this.speed.base, playerMetricX, this.refYCor + this.refYLength * 15 / 64);
+
+	//Render Minimum of Range of Match
+	context.fillText("Minimum of Your Range: " + this.number.min, playerMetricX, this.refYCor + this.refYLength * 18 / 64);
+
+	//Render Maximum of Range of Match
+	context.fillText("Maximum of Your Range: " + (this.number.max - 1), playerMetricX, this.refYCor + this.refYLength * 21 / 64);
+
+	//Render Victory Points Goal
+	context.font = "bold 14pt sans-serif";
+	context.textAlign = "right";
+	context.fillStyle = "rgb(84,84,84)";
+	context.fillText("Victory Points Goal: " + game.toWin, targetMetricX, this.refYCor + this.refYLength * 6 / 64);
+
+	//Render Minimum of Range of Target
+	context.fillText("Minimum of Target Range: " + game.number.min, targetMetricX, this.refYCor + this.refYLength * 9 / 64);
+
+	//Render Maximum of Range of Target
+	context.fillText("Maximum of Target Range: " + (game.number.max - 1), targetMetricX, this.refYCor + this.refYLength * 12 / 64);
 
 	//Render any Error Messages
 	this.notification.renderNotify(currentTime, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 
 	//Render Inventory or Store
-	this.inventory.render(this.isInventoryRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
+	this.inventory.render(this.isInventoryRendered, false, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 	this.renderStore(store);
 };
 
@@ -305,7 +334,7 @@ Player.prototype.generateRandomNumber = function (currentTime){
 };
 
 Player.prototype.renderStore = function(store){
-	store.render(this.isStoreRendered, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
+	store.render(this.isStoreRendered, true, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 };
 
 function Notification() {
@@ -336,7 +365,7 @@ Notification.prototype.renderNotify  = function(currentTime, refXCor, refYCor, r
 			} else {
 				context.fillStyle = 'rgb(250,0,96)'; // complimentary color to mediumspringgreen  #FA0060
 			}
-			context.fillRect(refXCor + refXLength / 2 - context.measureText(this.notifyMessage).width / 2, refYCor + refYLength * 13 / 16 - refXLength * 5 / 32, context.measureText(this.notifyMessage).width, refYLength * 3 / 64);
+			context.fillRect(refXCor + refXLength / 2 - context.measureText(this.notifyMessage).width / 2, refYCor + refYLength * 13 / 16 - refXLength * 9 / 64, context.measureText(this.notifyMessage).width, refYLength * 3 / 64);
 
 			context.font = "bold 12pt sans-serif";
 			context.textAlign = "center";
@@ -385,19 +414,12 @@ NumGenerator.prototype.changeColor = function(newColor) {
 		this.fillColor = newColor;
 };
 
-NumGenerator.prototype.changeMin = function(newMin){
-		this.min = newMin;
-};
-
-NumGenerator.prototype.changeMax = function(newMax){
-		this.max = newMax;
-};
-
 NumGenerator.prototype.render = function(refXCor, refYCor, font, fillColor){
 	//Render Target
 	context.font = font;
 	context.textAlign = "center";
 	context.fillStyle = fillColor;
+	context.textBaseline = "middle";
 	context.fillText(this.num, refXCor, refYCor);
 };
 
@@ -413,21 +435,32 @@ function Item(name, price, abbrev, target, color, type, use){
 	this.use = use; //This will be a function that will be executed when the item is used
 }
 
-Item.prototype.render = function(xCor, yCor, sideLength){
+Item.prototype.render = function(showPrice, xCor, yCor, sideLength){
 		context.fillStyle = this.color;
 		context.textAlign = "center";
 		context.fillRect(xCor, yCor, sideLength, sideLength);
 
+		var showPriceY = 0;
+
+		if (showPrice === true){ //Shows the price of the item
+			showPriceY = sideLength / 8;
+
+			context.font = "bold 8pt sans-serif";
+			context.textAlign = "center";
+			context.fillStyle = "black";
+			context.fillText("Cost: " + this.price, xCor + sideLength / 2, yCor + sideLength - showPriceY);
+		}
+
 		context.font = "bold 12pt sans-serif";
 		context.textAlign = "center";
 		context.fillStyle = "black";
-		context.fillText(this.abbrev, xCor + sideLength / 2, yCor + sideLength / 2);
-};
+		context.fillText(this.abbrev, xCor + sideLength / 2, yCor + sideLength / 2 - showPriceY);
 
-Item.prototype.renderPrice = function(startXCor, startYCor, sideLength){
 		context.font = "8pt sans-serif";
 		context.textAlign = "center";
-		context.fillStyle (this.price, xCor + sideLength / 2, yCor + sideLength * 5 / 8);
+		context.fillStyle = "black";
+		context.fillText("@ " + this.target, xCor + sideLength / 2, yCor + sideLength / 2 + sideLength / 8 - showPriceY);
+
 };
 
 function ItemStorage(name, maxHold){
@@ -437,7 +470,7 @@ function ItemStorage(name, maxHold){
 	this.set = []; //What is currently in the storage
 }
 
-ItemStorage.prototype.render = function(isRender, refXCor, refYCor, refXLength, refYLength) {
+ItemStorage.prototype.render = function(isRender, showPrice, refXCor, refYCor, refXLength, refYLength) {
 		//Rendering of the skeleton of the storage
 		var sideLength = refXLength / 8;
 		var xCor = refXCor + (refXLength - sideLength * this.maxHold) / 2;
@@ -448,7 +481,7 @@ ItemStorage.prototype.render = function(isRender, refXCor, refYCor, refXLength, 
 			context.font = "bold 12pt sans-serif";
 			context.textAlign = "left";
 			context.fillStyle = "black";
-			context.fillText(this.name, xCor, yCor - canvas.height / 32);
+			context.fillText(this.name, xCor, yCor - refYLength / 32);
 
 			for (i = 0; i < this.maxHold; i++){
 				context.lineWidth = 1;
@@ -469,7 +502,7 @@ ItemStorage.prototype.render = function(isRender, refXCor, refYCor, refXLength, 
 					context.fillStyle = "black";
 					context.fillText("no item", xCor + sideLength / 2, yCor + sideLength / 2);
 				} else {
-					this.set[i].render(xCor, yCor, sideLength);
+					this.set[i].render(showPrice, xCor, yCor, sideLength);
 				}
 
 				xCor += sideLength;
@@ -493,44 +526,103 @@ ItemStorage.prototype.clearRender = function(refXCor, refYCor, refXLength, refYL
 		context.clearRect(xCor, yCor, sideLength * this.maxHold, sideLength);
 };
 
-function generateRandomItem (type){
+function generateRandomItem (type, numOfPlayers){
 	//Generate either a bad or good item for either store or the game
 	return (function(){
 		var availableItems = {};
 		availableItems.victoryPoints = new Item("Increase Victory Points", 1, "VP", "self", "yellow", "special", function(player){
 											player.victoryPoints++;
-											console.log("haha");});
+											return ["Your Victory Points have increased by 1.", true];
+										});
 		availableItems.decreaseBaseSpeed = new Item("Decrease Base Speed", 1, "BS-", "self", "blue", "good", function(player){
-											if(player.speed.base > 1){
-												player.speed.base--;
-											} else {
-												return "Base Speed cannot be reduced further.";
+												if(player.speed.base > 1){
+													player.speed.base--;
+													return ["Your Base Speed has decreased by 1.", true];
+												} else {
+													return ["Base Speed cannot be reduced further.", false];
 											}});
-		availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "self", "orange", "bad");
-		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 1, "TR-", "self", "green", "good");
-		availableItems.increaseTargetRange = new Item("Increase Target Range", 1, "TR+", "self", "pumpkin", "good");
-		availableItems.decreaseMatchRange = new Item("Decrease Match Range", 1, "MR-", "self", "brown", "good");
-		availableItems.increaseMatchRange = new Item("Increase Match Range", 1, "MR+", "self", "red", "good");
+		availableItems.increaseBaseSpeed = new Item("Increase Base Speed", undefined, "BS+", "self", "orange", "bad", function(player){
+												player.speed.base++;
+												return ["Your Base Speed has increased by 1.", false];
+											});
+		availableItems.decreaseTargetRange = new Item("Decrease Target Range", 1, "TR-", "self", "green", "good", function(player){
+													if (game.number.min < player.number.min){
+														game.number.min++;
+														return ["The min of Target number has increased by 1.", true];
+													} else if(game.number.max + 1 > game.number.min){
+														game.number.max--;
+														return ["The max of Target number has decreased by 1.", true];
+													} else {
+														return ["Target number's Range cannot be reduced further.", false];
+												}});
+		availableItems.increaseTargetRange = new Item("Increase Target Range", 1, "TR+", "self", "pumpkin", "good", function(player){
+													if(game.number.min > 0){
+														game.number.min--;
+														return ["The min of Target number has decreased by 1.", true];
+													} else {
+														game.number.max++;
+														return ["The max of Target number has increased by 1.", true];
+												}});
+		availableItems.decreaseMatchRange = new Item("Decrease Match Range", 1, "MR-", "self", "brown", "good", function(player){
+													if (player.number.min < game.number.min){
+														player.number.min++;
+														return ["The min of your Match number's range has increased by 1.", true];
+													} else if (player.number.max + 1 > player.number.min){
+														player.number.max--;
+														return ["The max of your Match number's range has decreased by 1.", true];
+													} else {
+														return ["Your Match number's Range cannot be reduced further.", false];
+												}});
+		availableItems.increaseMatchRange = new Item("Increase Match Range", 1, "MR+", "self", "red", "good", function(player){
+													if(player.number.min > 0){
+														player.number.min--;
+														return ["The min of your Match number's range has decreased by 1.", true];
+													} else {
+														player.number.max++;
+														return ["The max of your Match number's range has increased by 1.", true];
+												}});
 
 		var selection = [];
+		var itemKeys = Object.keys(availableItems);
 
-		if (type === "good"){
-			for (var i = 0; i < Object.keys(availableItems).length; i++){
-				if (availableItems[Object.keys(availableItems)[i]].type === "good") {
-					selection.push(Object.keys(availableItems)[i]);
+		if (type === "good" && numOfPlayers > 1){
+			for (var i = 0; i < itemKeys.length; i++){
+				if (availableItems[itemKeys[i]].type === "good") {
+					selection.push(itemKeys[i]);
 				}
-			}	
+			}
+		} else if (type === "good"){
+			for (var i = 0; i < itemKeys.length; i++){
+				if (availableItems[itemKeys[i]].type === "good" && availableItems[itemKeys[i]].target === "self") {
+					selection.push(itemKeys[i]);
+				}
+			}
 		} else if (type === "bad"){
-			for (var i = 0; i < Object.keys(availableItems).length; i++){
-				if (availableItems[Object.keys(availableItems)[i]].type === "bad") {
-					selection.push(Object.keys(availableItems)[i]);
+			for (var i = 0; i < itemKeys.length; i++){
+				if (availableItems[itemKeys[i]].type === "bad") {
+					selection.push(itemKeys[i]);
 				}
 			}
 		} else if (type === "special"){
 			selection.push("victoryPoints");
-		} else if (type === "either"){
-			selection = Object.keys(availableItems);
+		} else if (type === "all"){
+			selection = itemKeys;
 		}
 		return availableItems[selection[Math.floor(Math.random() * selection.length)]];
+	})();
+}
+
+function msToTime(duration) {
+	return (function() {
+		var minutes = Math.floor(duration / 60000);
+		var seconds = Math.floor(duration / 1000) - minutes * 60;
+
+		if (minutes < 10){
+			minutes = "0" + minutes;
+		}
+		if (seconds < 10){
+			seconds = "0" + seconds;
+		}
+		return " " + minutes + ":" + seconds + " ";
 	})();
 }
