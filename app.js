@@ -5,7 +5,6 @@ window.onload = function(){
 	context = canvas.getContext('2d');
 	game = new Game();
 	game.initialize();
-	requestAnimFrame(game.render.bind(game));
 };
 
 window.addEventListener("keydown", checkKey, false);
@@ -25,106 +24,183 @@ window.requestAnimFrame = function(){
 }();
 
 function checkKey(e){
+	var playerOne = game.players[0];
+	var playerTwo = game.players[1];
 	e.preventDefault();
 	//Checks what Keys were pressed 
 	switch (e.keyCode) {
 		case 32: //Spacebar
-			game.checksCollision(game.playerOne);
+			if(playerOne){
+				game.checksCollision(playerOne);
+			}
+			break;
+		case 13: //Enter
+			if (playerTwo){
+				game.checksCollision(playerTwo);
+			}
 			break;
 		case 38: //Up key
-			if (game.playerOne.speed.multiplier === -1){
-				game.playerOne.speed.multiplier = 1;
-			} else {
-				game.playerOne.speed.changeMultiplier(game.playerOne.speed.multiplier + 1);
+			if (playerTwo){
+				playerTwo.speed.changeMultiplier(playerTwo.speed.multiplier + 1);
+				playerTwo.speed.changeTotalSpeed();
+			} else if (playerOne) {
+				playerOne.speed.changeMultiplier(playerOne.speed.multiplier + 1);
+				playerOne.speed.changeTotalSpeed();
 			}
-			game.playerOne.speed.changeTotalSpeed();
 			break;
 		case 40: //Down key
-			if(game.playerOne.speed.multiplier === 1){
-				game.playerOne.speed.multiplier = 1;
-			} else {
-				game.playerOne.speed.changeMultiplier(game.playerOne.speed.multiplier - 1);
+			if (playerTwo){
+				if(playerTwo.speed.multiplier > 1){
+					playerTwo.speed.changeMultiplier(playerTwo.speed.multiplier - 1);
+				}
+				playerTwo.speed.changeTotalSpeed();
+			} else if (playerOne) {
+				if(playerOne.speed.multiplier > 1){
+					playerOne.speed.changeMultiplier(playerOne.speed.multiplier - 1);
+				}
+				playerOne.speed.changeTotalSpeed();
 			}
-			game.playerOne.speed.changeTotalSpeed();
 			break;
 		case 73: //"i" key
-			if (game.playerOne.isStoreRendered === true){
-				game.playerOne.isStoreRendered = false;
-				game.store.clearRender();
-				game.playerOne.isInventoryRendered = true;
-			} else {
-				game.playerOne.isInventoryRendered  = true;
+			if(playerOne && playerTwo === undefined){
+				if (playerOne.isStoreRendered === true){
+					playerOne.isStoreRendered = false;
+					playerOne.clearStore(game.store);
+					playerOne.isInventoryRendered = true;
+				} else {
+					playerOne.isInventoryRendered  = true;
+				}
 			}
 			break;
 		case 83: //"s" key
-			if (game.playerOne.isInventoryRendered  === true){
-				game.playerOne.isInventoryRendered  = false;
-				game.playerOne.inventory.clearRender();
-				game.playerOne.isStoreRendered = true;
-			} else {
-				game.playerOne.isStoreRendered = true;
+			if(playerOne && playerTwo === undefined){
+				if (playerOne.isInventoryRendered  === true){
+					playerOne.isInventoryRendered  = false;
+					playerOne.inventory.clearRender();
+					playerOne.isStoreRendered = true;
+				} else {
+					playerOne.isStoreRendered = true;
+				}
 			}
 			break;
 		case 49: //"1" key
-			if(game.playerOne){
-				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[0] !== undefined){
-					game.playerOne.useItem(0);
-				} else if (game.playerOne.isStoreRendered === true){
-					game.playerOne.buyItem(game.store, 0);
+			if(playerOne){
+				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[0] !== undefined){
+					playerOne.useItem(0);
+				} else if (playerOne.isStoreRendered === true){
+					playerOne.buyItem(game.store, 0);
 				}
 
 			}
 			break;
 		case 50: //"2" key
-			if(game.playerOne){
-				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[1] !== undefined){
-					game.playerOne.useItem(1);
-				} else if (game.playerOne.isStoreRendered === true){
-					game.playerOne.buyItem(game.store, 1);
+			if(playerOne){
+				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[1] !== undefined){
+					playerOne.useItem(1);
+				} else if (playerOne.isStoreRendered === true){
+					playerOne.buyItem(game.store, 1);
 				}
 
 			}
 			break;
 		case 51: //"3" key
-			if(game.playerOne){
-				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[2] !== undefined){
-					game.playerOne.useItem(2);
-				} else if (game.playerOne.isStoreRendered === true){
-					game.playerOne.buyItem(game.store, 2);
+			if(playerOne){
+				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[2] !== undefined){
+					playerOne.useItem(2);
+				} else if (playerOne.isStoreRendered === true){
+					playerOne.buyItem(game.store, 2);
 				}
 
 			}
 			break;
 		case 52: //"4" key
-			if(game.playerOne){
-				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[3] !== undefined){
-					game.playerOne.useItem(3);
-				} else if (game.playerOne.isStoreRendered === true){
-					game.playerOne.buyItem(game.store, 3);
+			if(playerOne){
+				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[3] !== undefined){
+					playerOne.useItem(3);
+				} else if (playerOne.isStoreRendered === true){
+					playerOne.buyItem(game.store, 3);
 				}
 
 			}
 			break;
 		case 53: //"5" key
-			if(game.playerOne){
-				if(game.playerOne.isInventoryRendered === true && game.playerOne.inventory.set[4] !== undefined){
-					game.playerOne.useItem(4);
-				} else if (game.playerOne.isStoreRendered === true){
-					game.playerOne.buyItem(game.store, 4);
+			if(playerOne){
+				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[4] !== undefined){
+					playerOne.useItem(4);
+				} else if (playerOne.isStoreRendered === true){
+					playerOne.buyItem(game.store, 4);
 				}
 
 			}
 			break;
 		case 54: //"6" key
-			if(game.playerOne){
-				if (game.playerOne.isStoreRendered === true){
-					game.playerOne.buyItem(game.store, 5);
+			if(playerOne){
+				if (playerOne.isStoreRendered === true){
+					playerOne.buyItem(game.store, 5);
+				}
+
+			}
+			break;
+		case 97: //numberpad "1" key
+			if(playerTwo){
+				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[0] !== undefined){
+					playerTwo.useItem(0);
+				} else if (playerTwo.isStoreRendered === true){
+					playerTwo.buyItem(game.store, 0);
+				}
+
+			}
+			break;
+		case 98: //numberpad "2" key
+			if(playerTwo){
+				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[1] !== undefined){
+					playerTwo.useItem(1);
+				} else if (playerTwo.isStoreRendered === true){
+					playerTwo.buyItem(game.store, 1);
+				}
+
+			}
+			break;
+		case 99: //numberpad "3" key
+			if(playerTwo){
+				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[2] !== undefined){
+					playerTwo.useItem(2);
+				} else if (playerTwo.isStoreRendered === true){
+					playerTwo.buyItem(game.store, 2);
+				}
+
+			}
+			break;
+		case 100: //numberpad "4" key
+			if(playerTwo){
+				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[3] !== undefined){
+					playerTwo.useItem(3);
+				} else if (playerTwo.isStoreRendered === true){
+					playerTwo.buyItem(game.store, 3);
+				}
+
+			}
+			break;
+		case 101: //numberpad "5" key
+			if(playerTwo){
+				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[4] !== undefined){
+					playerTwo.useItem(4);
+				} else if (playerTwo.isStoreRendered === true){
+					playerTwo.buyItem(game.store, 4);
+				}
+
+			}
+			break;
+		case 102: //numberpad "6" key
+			if(playerTwo){
+				if (playerTwo.isStoreRendered === true){
+					playerTwo.buyItem(game.store, 5);
 				}
 
 			}
 			break;
 		}
-}
+	}
 
 function checkMouse(e){
 	//This handles the click events
@@ -132,24 +208,27 @@ function checkMouse(e){
 	e = e || window.event;
 	var button = e.which || e.button;
 	if (button == 1) { //Checks if it is a left mouse button click
-		game.checksCollision(game.playerOne);
+		game.checksCollision(game.players[1]);
 	}
 }
 
 function checkTouch(e){
 	//this handles the touch events
 	e.preventDefault();
-	game.checksCollision(game.playerOne);
+	game.checksCollision(game.players[1]);
 }
 
 function Game(){
 	this.toWin = 2;
 	this.number = new NumGenerator(0, 10);
-	this.store = new ItemStorage("Store [S]", 6);
+	this.store = new ItemStorage("Store", 6);
 	this.numOfPlayers = 0;
+	this.pastGameTime = 0;
 	this.players = [];
-	this.playerOne = new Player("Bob", 0, 0, canvas.width, canvas.height);
-	this.playerOneLastTime = 0;
+	this.isStartScreen = true;
+	this.isPlayerScreen = true;
+	this.isGameScreen = true;
+	this.isGameOver = true;
 }
 
 Game.prototype.initialize = function(){
@@ -157,13 +236,35 @@ Game.prototype.initialize = function(){
 	for (var i = 1; i < this.store.maxHold; i++){
 		this.store.set.push(generateRandomItem("good", this.numOfPlayers));
 	}
+	this.getInfo();
+	requestAnimFrame(this.render.bind(this));
+};
+
+Game.prototype.getInfo = function(){
+	var name, player;
+
+	if(confirm("Welcome to the game by T, 1-2-Fre3eze! Press OK to play in Single Player mode. Press Cancel for Head-to-Head game.")){
+		name = prompt("This is Single Player mode. Please enter your gamertag or you will be Alex.", "Alex");
+		player = new Player(name, 0, 0, canvas.width, canvas.height);
+		this.players.push(player);
+		this.numOfPlayers = this.players.length;
+	} else {
+		canvas.width = 1400;
+		name = prompt("This is Head-to-Head mode. Please enter your Player 1's gamertag or it will be Alex.", "Alex");
+		player = new Player(name, 0, 0, canvas.width / 2, canvas.height);
+		this.players.push(player);
+		name = prompt("Please enter your Player 2's gamertag or it will be Terry.", "Terry");
+		player = new Player(name, canvas.width / 2, 0, canvas.width / 2, canvas.height);
+		this.players.push(player);
+		this.numOfPlayers = this.players.length;
+	}
 };
 
 Game.prototype.checksWin = function(player){
 	//Checks if the victory points of the player matches the goal
 	if(player.victoryPoints === this.toWin){
 		alert(player.name + " has won the game");
-		this.initialize();
+		this.reset();
 	}
 };
 
@@ -182,8 +283,11 @@ Game.prototype.render = function(currentTime){
 	context.save();
 	context.clearRect(0,0,canvas.width,canvas.height);
 	
-	this.playerOne.render(this.store, this.number, currentTime);
-	this.playerOne.generateRandomNumber(currentTime);
+	//Render each player's screen
+	for(var j = 0; j < this.players.length; j ++){
+		this.players[j].render(this.store, this.number, currentTime);
+		this.players[j].generateRandomNumber(currentTime);
+	}
 
 	//Context Restore
     context.restore();
@@ -191,11 +295,28 @@ Game.prototype.render = function(currentTime){
 	requestAnimFrame(this.render.bind(this));
 };
 
+Game.prototype.startScreenRender = function(){
+
+};
+
+Game.prototype.playerScreenRender = function(){
+
+};
+
+Game.prototype.gameScreenRender = function(){
+
+};
+
+
+Game.prototype.gameOverRender = function(currentTime){
+};
+
 Game.prototype.reset = function(){
 	this.players = [];
 	this.numOfPlayers = 0;
 	this.number = new NumGenerator(0, 10);
-	this.store = new ItemStorage("Store [S]", 6);
+	this.store = new ItemStorage("Store", 6);
+	canvas.width = 700;
 	this.initialize();
 };
 
@@ -208,10 +329,12 @@ function Player(name, refXCor, refYCor, refXLength, refYLength){
 	this.lastCallTime = 0; //Helps keep track of when a new number should be generated
 	this.updateWrong = false; //Lets the program know if the lastWrongTime needs to be updated 
 	this.lastWrongTime = 0;//Helps keep track of how long the pause should be for the mismatch
-	this.inventory = new ItemStorage('Inventory [I]', 5);
+	this.inventory = new ItemStorage('Inventory', 5);
 	this.isInventoryRendered = true;//Tracks if the inventory is being rendered
 	this.isStoreRendered = false;//Tracks if the store being rendered
 	this.notification = new Notification();
+	//this.isHelpScreen = false; //Tracks if the Help Screen is being rendered.
+	//this.keys = new Keys(); //This will hold the keys for each player 
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
 	this.refXLength = refXLength;
@@ -254,6 +377,11 @@ Player.prototype.useItem = function(itemNumber){
 Player.prototype.render = function(store, number, currentTime){
 	var playerMetricX = this.refXCor + this.refXLength / 32;
 	var targetMetricX = this.refXCor + this.refXLength * 31 / 32;
+
+	//Creates outside border of game
+	context.lineWidth = 1;
+	context.fillStyle = "black";
+	context.strokeRect(this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 
 	//Creates the environment
 	context.lineWidth = 3;
@@ -321,6 +449,9 @@ Player.prototype.render = function(store, number, currentTime){
 	this.renderStore(store);
 };
 
+Player.prototype.helpScreenRender= function(){
+};
+
 Player.prototype.generateRandomNumber = function (currentTime){
 	if(this.updateWrong === true){
 		this.lastWrongTime = currentTime;
@@ -335,6 +466,10 @@ Player.prototype.generateRandomNumber = function (currentTime){
 
 Player.prototype.renderStore = function(store){
 	store.render(this.isStoreRendered, true, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
+};
+
+Player.prototype.clearStore = function(store){
+	store.clearRender(this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 };
 
 function Notification() {
@@ -482,7 +617,7 @@ ItemStorage.prototype.render = function(isRender, showPrice, refXCor, refYCor, r
 			context.textAlign = "left";
 			context.fillStyle = "black";
 			context.fillText(this.name, xCor, yCor - refYLength / 32);
-
+			
 			for (i = 0; i < this.maxHold; i++){
 				context.lineWidth = 1;
 				context.fillStyle = "black";
@@ -491,7 +626,7 @@ ItemStorage.prototype.render = function(isRender, showPrice, refXCor, refYCor, r
 				context.font = "bold 8pt sans-serif";
 				context.textAlign = "center";
 				context.fillStyle = "grey";
-				context.fillText(i + 1, xCor + sideLength / 2, yCor + sideLength + canvas.height / 32);
+				context.fillText(i + 1, xCor + sideLength / 2, yCor + sideLength + refYLength / 32);
 
 				if (this.set[i] === undefined){
 					context.fillStyle = 'rgb(220,220,220)';
@@ -512,7 +647,7 @@ ItemStorage.prototype.render = function(isRender, showPrice, refXCor, refYCor, r
 			context.font = "bold 12pt sans-serif";
 			context.textAlign = "left";
 			context.fillStyle = "gray";
-			context.fillText(this.name, xCor + sideLength * this.maxHold / 2, yCor - canvas.height / 32);
+			context.fillText(this.name, xCor + sideLength * this.maxHold / 2, yCor - refYLength / 32);
 		}
 
 };
@@ -525,6 +660,11 @@ ItemStorage.prototype.clearRender = function(refXCor, refYCor, refXLength, refYL
 
 		context.clearRect(xCor, yCor, sideLength * this.maxHold, sideLength);
 };
+
+function Key(keyCode, use){
+	this.keyCode = keyCode;
+	this.use = use;
+}
 
 function generateRandomItem (type, numOfPlayers){
 	//Generate either a bad or good item for either store or the game
