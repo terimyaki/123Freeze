@@ -28,180 +28,240 @@ function checkKey(e){
 	var playerTwo = game.players[1];
 	e.preventDefault();
 	//Checks what Keys were pressed 
-	switch (e.keyCode) {
-		case 32: //Spacebar
-			if(playerOne){
-				game.checksCollision(playerOne);
-			}
-			break;
-		case 13: //Enter
-			if (playerTwo){
-				game.checksCollision(playerTwo);
-			}
-			break;
-		case 38: //Up key
-			if (playerTwo){
-				playerTwo.speed.changeMultiplier(playerTwo.speed.multiplier + 1);
-				playerTwo.speed.changeTotalSpeed();
-			} else if (playerOne) {
-				playerOne.speed.changeMultiplier(playerOne.speed.multiplier + 1);
-				playerOne.speed.changeTotalSpeed();
-			}
-			break;
-		case 40: //Down key
-			if (playerTwo){
-				if(playerTwo.speed.multiplier > 1){
-					playerTwo.speed.changeMultiplier(playerTwo.speed.multiplier - 1);
-				}
-				playerTwo.speed.changeTotalSpeed();
-			} else if (playerOne) {
-				if(playerOne.speed.multiplier > 1){
-					playerOne.speed.changeMultiplier(playerOne.speed.multiplier - 1);
-				}
-				playerOne.speed.changeTotalSpeed();
-			}
-			break;
-		case 73: //"i" key
-			if(playerOne && playerTwo === undefined){
-				if (playerOne.isStoreRendered === true){
-					playerOne.isStoreRendered = false;
-					playerOne.clearStore(game.store);
-					playerOne.isInventoryRendered = true;
+	if(game.isStartScreen){
+		switch (e.keyCode) {
+			case 13: // Enter Key
+				if(game.startButton.isHighlighted === true){
+					game.isPlayerScreen = true;
+					game.okButton.name = "Play Game";
+					game.okButton.isHighlighted = false;
+					delete game.startButton;
+					delete game.aboutButton;
+					game.isStartScreen = false;
 				} else {
-					playerOne.isInventoryRendered  = true;
+					game.isAboutScreen = true;
+					game.okButton.name = "Back to Start Screen";
+					game.okButton.isHighlighted = true;
+					game.isStartScreen = false;
 				}
-			}
-			break;
-		case 83: //"s" key
-			if(playerOne && playerTwo === undefined){
-				if (playerOne.isInventoryRendered  === true){
-					playerOne.isInventoryRendered  = false;
-					playerOne.inventory.clearRender();
-					playerOne.isStoreRendered = true;
-				} else {
-					playerOne.isStoreRendered = true;
+				break;
+			case 38: // Up Key
+				if (game.aboutButton.isHighlighted === true){
+					game.startButton.isHighlighted = true;
+					game.aboutButton.isHighlighted = false;
 				}
-			}
-			break;
-		case 49: //"1" key
-			if(playerOne){
-				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[0] !== undefined){
-					playerOne.useItem(0);
-				} else if (playerOne.isStoreRendered === true){
-					playerOne.buyItem(game.store, 0);
+				break;
+			case 40: // Down Key
+				if (game.startButton.isHighlighted === true){
+					game.aboutButton.isHighlighted = true;
+					game.startButton.isHighlighted = false;
 				}
-
-			}
-			break;
-		case 50: //"2" key
-			if(playerOne){
-				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[1] !== undefined){
-					playerOne.useItem(1);
-				} else if (playerOne.isStoreRendered === true){
-					playerOne.buyItem(game.store, 1);
-				}
-
-			}
-			break;
-		case 51: //"3" key
-			if(playerOne){
-				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[2] !== undefined){
-					playerOne.useItem(2);
-				} else if (playerOne.isStoreRendered === true){
-					playerOne.buyItem(game.store, 2);
-				}
-
-			}
-			break;
-		case 52: //"4" key
-			if(playerOne){
-				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[3] !== undefined){
-					playerOne.useItem(3);
-				} else if (playerOne.isStoreRendered === true){
-					playerOne.buyItem(game.store, 3);
-				}
-
-			}
-			break;
-		case 53: //"5" key
-			if(playerOne){
-				if(playerOne.isInventoryRendered === true && playerOne.inventory.set[4] !== undefined){
-					playerOne.useItem(4);
-				} else if (playerOne.isStoreRendered === true){
-					playerOne.buyItem(game.store, 4);
-				}
-
-			}
-			break;
-		case 54: //"6" key
-			if(playerOne){
-				if (playerOne.isStoreRendered === true){
-					playerOne.buyItem(game.store, 5);
-				}
-
-			}
-			break;
-		case 97: //numberpad "1" key
-			if(playerTwo){
-				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[0] !== undefined){
-					playerTwo.useItem(0);
-				} else if (playerTwo.isStoreRendered === true){
-					playerTwo.buyItem(game.store, 0);
-				}
-
-			}
-			break;
-		case 98: //numberpad "2" key
-			if(playerTwo){
-				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[1] !== undefined){
-					playerTwo.useItem(1);
-				} else if (playerTwo.isStoreRendered === true){
-					playerTwo.buyItem(game.store, 1);
-				}
-
-			}
-			break;
-		case 99: //numberpad "3" key
-			if(playerTwo){
-				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[2] !== undefined){
-					playerTwo.useItem(2);
-				} else if (playerTwo.isStoreRendered === true){
-					playerTwo.buyItem(game.store, 2);
-				}
-
-			}
-			break;
-		case 100: //numberpad "4" key
-			if(playerTwo){
-				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[3] !== undefined){
-					playerTwo.useItem(3);
-				} else if (playerTwo.isStoreRendered === true){
-					playerTwo.buyItem(game.store, 3);
-				}
-
-			}
-			break;
-		case 101: //numberpad "5" key
-			if(playerTwo){
-				if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[4] !== undefined){
-					playerTwo.useItem(4);
-				} else if (playerTwo.isStoreRendered === true){
-					playerTwo.buyItem(game.store, 4);
-				}
-
-			}
-			break;
-		case 102: //numberpad "6" key
-			if(playerTwo){
-				if (playerTwo.isStoreRendered === true){
-					playerTwo.buyItem(game.store, 5);
-				}
-
-			}
-			break;
+				break;
 		}
-	}
+	} else if (game.isAboutScreen){
+		if (e.keyCode === 13){ // Enter Key
+			game.isStartScreen = true;
+			game.isAboutScreen = false;
+		}
 
+	} else if(game.isPlayerScreen){
+
+	} else if (game.isGameScreen){
+		/*switch (e.keyCode) {
+			case 32: //Spacebar
+				if(game.isGameScreen){
+					if(playerOne){
+						game.checksCollision(playerOne);
+					}
+				}
+				break;
+			case 13: //Enter
+				if(game.isGameScreen){
+					if (playerTwo){
+						game.checksCollision(playerTwo);
+					}
+				}
+				break;
+			case 38: //Up key
+				if(game.isGameScreen){
+					if (playerTwo){
+						playerTwo.speed.changeMultiplier(playerTwo.speed.multiplier + 1);
+						playerTwo.speed.changeTotalSpeed();
+					} else if (playerOne) {
+						playerOne.speed.changeMultiplier(playerOne.speed.multiplier + 1);
+						playerOne.speed.changeTotalSpeed();
+					}
+				}
+				break;
+			case 40: //Down key
+							if(game.isGameScreen){
+					if (playerTwo){
+						if(playerTwo.speed.multiplier > 1){
+							playerTwo.speed.changeMultiplier(playerTwo.speed.multiplier - 1);
+						}
+						playerTwo.speed.changeTotalSpeed();
+					} else if (playerOne) {
+						if(playerOne.speed.multiplier > 1){
+							playerOne.speed.changeMultiplier(playerOne.speed.multiplier - 1);
+						}
+						playerOne.speed.changeTotalSpeed();
+					}
+				}
+				break;
+			case 73: //"i" key
+				if(game.isGameScreen){
+					if(playerOne && playerTwo === undefined){
+						if (playerOne.isStoreRendered === true){
+							playerOne.isStoreRendered = false;
+							playerOne.clearStore(game.store);
+							playerOne.isInventoryRendered = true;
+						} else {
+							playerOne.isInventoryRendered  = true;
+						}
+					}
+				}
+				break;
+			case 83: //"s" key
+				if(game.isGameScreen){
+					if(playerOne && playerTwo === undefined){
+						if (playerOne.isInventoryRendered  === true){
+							playerOne.isInventoryRendered  = false;
+							playerOne.inventory.clearRender();
+							playerOne.isStoreRendered = true;
+						} else {
+							playerOne.isStoreRendered = true;
+						}
+					}
+				}
+				break;
+			case 49: //"1" key
+				if(game.isGameScreen){
+					if(playerOne){
+						if(playerOne.isInventoryRendered === true && playerOne.inventory.set[0] !== undefined){
+							playerOne.useItem(0);
+						} else if (playerOne.isStoreRendered === true){
+							playerOne.buyItem(game.store, 0);
+						}
+					}
+				}
+				break;
+			case 50: //"2" key
+				if(game.isGameScreen){
+					if(playerOne){
+						if(playerOne.isInventoryRendered === true && playerOne.inventory.set[1] !== undefined){
+							playerOne.useItem(1);
+						} else if (playerOne.isStoreRendered === true){
+							playerOne.buyItem(game.store, 1);
+						}
+					}
+				}
+				break;
+			case 51: //"3" key
+				if(game.isGameScreen){
+					if(playerOne){
+						if(playerOne.isInventoryRendered === true && playerOne.inventory.set[2] !== undefined){
+							playerOne.useItem(2);
+						} else if (playerOne.isStoreRendered === true){
+							playerOne.buyItem(game.store, 2);
+						}
+					}
+				}
+				break;
+			case 52: //"4" key
+				if(game.isGameScreen){
+					if(playerOne){
+						if(playerOne.isInventoryRendered === true && playerOne.inventory.set[3] !== undefined){
+							playerOne.useItem(3);
+						} else if (playerOne.isStoreRendered === true){
+							playerOne.buyItem(game.store, 3);
+						}
+					}
+				}
+				break;
+			case 53: //"5" key
+				if(game.isGameScreen){
+					if(playerOne){
+						if(playerOne.isInventoryRendered === true && playerOne.inventory.set[4] !== undefined){
+							playerOne.useItem(4);
+						} else if (playerOne.isStoreRendered === true){
+							playerOne.buyItem(game.store, 4);
+						}
+					}
+				}
+				break;
+			case 54: //"6" key
+				if(game.isGameScreen){
+					if(playerOne){
+						if (playerOne.isStoreRendered === true){
+							playerOne.buyItem(game.store, 5);
+						}
+					}
+				}
+				break;
+			case 97: //numberpad "1" key
+				if(game.isGameScreen){
+					if(playerTwo){
+						if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[0] !== undefined){
+							playerTwo.useItem(0);
+						} else if (playerTwo.isStoreRendered === true){
+							playerTwo.buyItem(game.store, 0);
+						}
+					}
+				}
+				break;
+			case 98: //numberpad "2" key
+				if(game.isGameScreen){
+					if(playerTwo){
+						if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[1] !== undefined){
+							playerTwo.useItem(1);
+						} else if (playerTwo.isStoreRendered === true){
+							playerTwo.buyItem(game.store, 1);
+						}
+					}
+				}
+				break;
+			case 99: //numberpad "3" key
+				if(game.isGameScreen){
+					if(playerTwo){
+						if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[2] !== undefined){
+							playerTwo.useItem(2);
+						} else if (playerTwo.isStoreRendered === true){
+							playerTwo.buyItem(game.store, 2);
+						}
+					}
+				}
+				break;
+			case 100: //numberpad "4" key
+				if(playerTwo){
+					if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[3] !== undefined){
+						playerTwo.useItem(3);
+					} else if (playerTwo.isStoreRendered === true){
+						playerTwo.buyItem(game.store, 3);
+					}
+				}
+				break;
+			case 101: //numberpad "5" key
+				if(playerTwo){
+					if(playerTwo.isInventoryRendered === true && playerTwo.inventory.set[4] !== undefined){
+						playerTwo.useItem(4);
+					} else if (playerTwo.isStoreRendered === true){
+						playerTwo.buyItem(game.store, 4);
+					}
+				}
+				break;
+			case 102: //numberpad "6" key
+				if(playerTwo){
+					if (playerTwo.isStoreRendered === true){
+						playerTwo.buyItem(game.store, 5);
+					}
+				}
+				break;
+		}*/
+	} else if (game.isGameOver){
+
+	}
+	
+}
 function checkMouse(e){
 	//This handles the click events
 	e.preventDefault();
@@ -226,18 +286,22 @@ function Game(){
 	this.pastGameTime = 0;
 	this.players = [];
 	this.isStartScreen = true;
-	this.isPlayerScreen = true;
-	this.isGameScreen = true;
-	this.isGameOver = true;
+	this.isAboutScreen = false;
+	this.isPlayerScreen = false;
+	this.isGameScreen = false;
+	this.isGameOver = false;
+	this.okButton = new Button("OK", true);
 }
 
 Game.prototype.initialize = function(){
-	this.store.set.push(generateRandomItem("special", this.numOfPlayers));
-	for (var i = 1; i < this.store.maxHold; i++){
-		this.store.set.push(generateRandomItem("good", this.numOfPlayers));
-	}
-	this.getInfo();
-	requestAnimFrame(this.render.bind(this));
+	// this.store.set.push(generateRandomItem("special", this.numOfPlayers));
+	// for (var i = 1; i < this.store.maxHold; i++){
+	// 	this.store.set.push(generateRandomItem("good", this.numOfPlayers));
+	// }
+	// this.getInfo();
+	this.startButton = new Button("Start Game", true);
+	this.aboutButton  = new Button("About", false);
+	this.render();
 };
 
 Game.prototype.getInfo = function(){
@@ -282,11 +346,16 @@ Game.prototype.render = function(currentTime){
 	//This is the Looping function that renders the game
 	context.save();
 	context.clearRect(0,0,canvas.width,canvas.height);
-	
-	//Render each player's screen
-	for(var j = 0; j < this.players.length; j ++){
-		this.players[j].render(this.store, this.number, currentTime);
-		this.players[j].generateRandomNumber(currentTime);
+	if(this.isStartScreen){
+		this.startScreenRender();
+	} else if (this.isAboutScreen){
+		this.aboutScreenRender();
+	} else if (this.isPlayerScreen){
+		this.playerScreenRender();
+	} else if (this.isGameScreen){
+		this.gameScreenRender();
+	} else if (this.isGameOver){
+		this.gameOverScreenRender();
 	}
 
 	//Context Restore
@@ -297,14 +366,69 @@ Game.prototype.render = function(currentTime){
 
 Game.prototype.startScreenRender = function(){
 
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillStyle = "black";
+	context.font = "bold 42pt sans-serif";
+	context.fillText("1, 2,", canvas.width / 2, canvas.height / 4);
+
+	var space = context.measureText("E3").width - context.measureText("E").width - context.measureText("3").width + context.measureText("3").width / 2;
+	var begSpace = context.measureText("FRE").width / 2;
+	var endSpace = context.measureText("EZE").width / 2;
+
+	context.fillText("3", canvas.width / 2, canvas.height / 4 + 50);
+	
+	context.fillStyle = "blue";
+	context.fillText("FRE", canvas.width / 2 - begSpace - space, canvas.height / 4 + 50);
+
+	context.fillText("EZE", canvas.width / 2 + endSpace + space, canvas.height / 4 + 50);
+
+	context.font = "bold 24pt sans-serif";
+	this.startButton.render((canvas.width - context.measureText("   " + this.startButton.name + "   ").width) / 2, canvas.height * 3 / 4, context.measureText("   " + this.startButton.name + "   ").width, canvas.height / 12);
+	this.aboutButton.render((canvas.width - context.measureText("   " + this.aboutButton.name + "   ").width) / 2, canvas.height * 3 / 4 + 50, context.measureText("   " + this.aboutButton.name + "   ").width, canvas.height / 12);
+
+
+};
+
+Game.prototype.aboutScreenRender = function(){
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillStyle = "black";
+	context.font = "bold 24pt sans-serif";
+	context.fillText("About", canvas.width / 2, canvas.height / 16);
+
+	context.font = "bold 16pt sans-serif";
+	context.fillText("Goal: To Acquire Target Amount of Victory Points", canvas.width / 2, canvas.height  * 5 / 32);
+
+	context.font = "normal 16pt sans-serif";
+	convertToCanvasText(canvas.width / 32, canvas.height * 8 / 32, canvas.width * 31 / 32, "Buy Victory Points:  In the Store, using your Money.");
+	convertToCanvasText(canvas.width / 32, canvas.height * 10 / 32, canvas.width * 31 / 32, "Get Money:  By Matching your Number to Target number.");
+	convertToCanvasText(canvas.width / 32, canvas.height * 12 / 32, canvas.width * 31 / 32, "Get More Money:  By Increasing your Speed Multiplier.");
+	convertToCanvasText(canvas.width / 32, canvas.height * 14 / 32, canvas.width * 31 / 32, "Buy and Use Items on Self or Opponent: To Increase your Chance of Winning.");
+
+	context.font = "bold 16pt sans-serif";
+	this.okButton.render((canvas.width - context.measureText("   " + this.okButton.name + "   ").width) / 2, canvas.height * 11 / 12 - canvas.height / 16, context.measureText("   " + this.okButton.name + "   ").width, canvas.height / 12);
+
 };
 
 Game.prototype.playerScreenRender = function(){
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillStyle = "black";
+	context.font = "bold 24pt sans-serif";
+	context.fillText("Set up Game", canvas.width / 2, canvas.height / 16);
+
+	context.font = "bold 16pt sans-serif";
+	this.okButton.render((canvas.width - context.measureText("   " + this.okButton.name + "   ").width) / 2, canvas.height * 11 / 12 - canvas.height / 16, context.measureText("   " + this.okButton.name + "   ").width, canvas.height / 12);
 
 };
 
 Game.prototype.gameScreenRender = function(){
-
+	//Render each player's screen
+	for(var j = 0; j < this.players.length; j ++){
+		this.players[j].render(this.store, this.number, currentTime);
+		this.players[j].generateRandomNumber(currentTime);
+	}
 };
 
 
@@ -380,12 +504,11 @@ Player.prototype.render = function(store, number, currentTime){
 
 	//Creates outside border of game
 	context.lineWidth = 1;
-	context.fillStyle = "black";
+	context.strokeStyle = "black";
 	context.strokeRect(this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 
 	//Creates the environment
 	context.lineWidth = 3;
-	context.fillStyle = "black";
 	context.strokeRect(this.refXCor + this.refXLength * 7 / 16 , this.refYCor + this.refYLength / 64, this.refXLength / 8, this.refXLength / 8);
 
 	//Render Target Number
@@ -620,7 +743,7 @@ ItemStorage.prototype.render = function(isRender, showPrice, refXCor, refYCor, r
 			
 			for (i = 0; i < this.maxHold; i++){
 				context.lineWidth = 1;
-				context.fillStyle = "black";
+				context.strokeStyle = "black";
 				context.strokeRect(xCor , yCor, sideLength, sideLength);
 
 				context.font = "bold 8pt sans-serif";
@@ -661,9 +784,67 @@ ItemStorage.prototype.clearRender = function(refXCor, refYCor, refXLength, refYL
 		context.clearRect(xCor, yCor, sideLength * this.maxHold, sideLength);
 };
 
-function Key(keyCode, use){
+function Button(name, defaultStatus){
+	this.name = name;
+	this.isHighlighted = defaultStatus;
+}
+
+Button.prototype.render = function(xCor, yCor, xLength, yLength){
+	if (this.isHighlighted === true){
+		this.highlightRender(xCor, yCor, xLength, yLength);
+	}
+
+	context.lineWidth = 3;
+	context.lineJoin = "round";
+	context.strokeStyle = "black";
+	context.strokeRect(xCor, yCor, xLength, yLength);	
+
+	context.fillStyle = "black";
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillText(this.name, xCor + xLength / 2, yCor + yLength / 2);
+};
+
+Button.prototype.highlightRender = function(xCor, yCor, xLength, yLength){
+	context.fillStyle = "yellow";
+	context.fillRect(xCor, yCor, xLength, yLength);
+};
+
+function Key(name, keyCode, use){
+	this.name= name;
 	this.keyCode = keyCode;
+	this.keyName = keyName;
 	this.use = use;
+}
+
+function keyCodeToChar(keyCode){
+	return (function(){
+		var keyCodetoChar = {8:"Backspace",
+							9:"Tab",
+							13:"Enter",
+							16:"Shift",
+							17:"Ctrl",
+							18:"Alt",
+							19:"Pause/Break",
+							27:"Esc",
+							32:"Space",
+							33:"Page Up", 34:"Page Down",
+							35:"End", 36:"Home",
+							37:"Left", 38:"Up",	39:"Right",	40:"Down",
+							45:"Insert",
+							46:"Delete",
+							48:"0",	49:"1",	50:"2",	51:"3",	52:"4",	53:"5",	54:"6", 55:"7",	56:"8",	57:"9",
+							65:"A",	66:"B",	67:"C",	68:"D",	69:"E",	70:"F",	71:"G",72:"H",73:"I",74:"J",75:"K",76:"L",77:"M",78:"N",79:"O",80:"P",81:"Q",82:"R",83:"S",84:"T",85:"U",86:"V",87:"W",88:"X",89:"Y",90:"Z",
+							96:"Numpad 0",97:"Numpad 1",98:"Numpad 2",99:"Numpad 3",100:"Numpad 4",101:"Numpad 5",102:"Numpad 6",103:"Numpad 7",104:"Numpad 8",105:"Numpad 9",
+							106:"Numpad *",107:"Numpad +",109:"Numpad -",110:"Numpad .",111:"Numpad /",
+							112:"F1",113:"F2",114:"F3",115:"F4",116:"F5",117:"F6",118:"F7",119:"F8",120:"F9",121:"F10",122:"F11",123:"F12",
+							186:";",187:"=",188:",",189:"-",190:".",191:"/",192:"`",219:"[",220:"\\",221:"]",222:"'"};
+		if (keyCode in keyCodetoChar){
+			return keyCodeToChar[keyCode];
+		} else {
+			return undefined;
+		}
+	})();
 }
 
 function generateRandomItem (type, numOfPlayers){
@@ -765,4 +946,27 @@ function msToTime(duration) {
 		}
 		return " " + minutes + ":" + seconds + " ";
 	})();
+}
+
+function convertToCanvasText(refXCor, refYCor, refXLength, text){
+	var textArray = text.split(" ");
+	var line = "";
+	var lineNo = 0;
+
+	context.textAlign = "left";
+
+	for (var i = 0; i < textArray.length; i++){
+		if(context.measureText(line + " " + textArray[i]).width <= refXLength && i + 1 < textArray.length){
+			line = line + textArray[i] + " ";
+		} else if (context.measureText(line + " " + textArray[i]).width > refXLength && i + 1 === textArray.length){
+			context.fillText(line, refXCor, refYCor + lineNo * 25);
+			context.fillText(textArray[i], refXCor, refYCor + (lineNo + 1) * 25);
+		} else if( i + 1 === textArray.length){
+			context.fillText(line + textArray[i], refXCor, refYCor + lineNo * 25);
+		} else {
+			context.fillText(line, refXCor, refYCor + lineNo * 25);
+			line = textArray[i] + " ";
+			lineNo ++;
+		}
+	}
 }
