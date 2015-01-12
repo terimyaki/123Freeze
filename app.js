@@ -70,20 +70,27 @@ function checkKey(e){
 		if(game.numOfPlayers === 0){
 			switch(e.keyCode){
 				case 13:// Enter Key
-					game.threeButton = new Button("9", false);
+					game.threeButton = new Button("7", false);
+					
 					if(game.twoButton.isHighlighted === true){
 						game.numOfPlayers = 2;
 						game.okButton.name = "Create Player 1";
-						game.twoButton.isHighlighted = false;
-						game.oneButton.isHighlighted = false;
 						
-
 					} else {
 						game.numOfPlayers = 1;
 						game.okButton.name = "Create Player & Play Game";
 					}
-					game.twoButton.name = "5";
-					game.oneButton.name = "3";
+					//Fill the Shelves of the Store with Goodies
+					game.store.set.push(generateRandomItem("special"));
+					for(var i = 1; i < game.store.maxHold; i++){
+							game.store.set.push(generateRandomItem("good", game.numOfPlayers));
+					}
+
+					//Create Buttons for the Next Screen
+					game.twoButton.name = "3";
+					game.oneButton.name = "1";
+					game.twoButton.isHighlighted = false;
+					game.oneButton.isHighlighted = true;
 					game.okButton.isInactive = true;
 					break;
 				case 37: // Left Arrow
@@ -103,11 +110,11 @@ function checkKey(e){
 			switch(e.keyCode){
 				case 13:// Enter Key
 					if(game.oneButton.isHighlighted === true){
-						game.toWin = 3;
+						game.toWin = 1;
 					} else if (game.twoButton.isHighlighted === true){
-						game.toWin = 5;
+						game.toWin = 3;
 					} else if (game.threeButton.isHighlighted === true){
-						game.toWin = 9;
+						game.toWin = 7;
 					}
 					game.temp = {};
 					game.temp.refXCor = 0;
@@ -129,30 +136,30 @@ function checkKey(e){
 					game.temp.slotSixInput = new InputField("Slot 6", false);
 					game.temp.nameValue = "";
 					game.temp.keyCodeList = [];
-					game.temp.matchValue = 0;
-					game.temp.upSpeedValue = 0;
-					game.temp.downSpeedValue = 0;
-					game.temp.helpValue = 0;
-					game.temp.inventoryValue = 0;
-					game.temp.storeValue = 0;
-					game.temp.slotOneValue = 0;
-					game.temp.slotTwoValue = 0;
-					game.temp.slotThreeValue = 0;
-					game.temp.slotFourValue = 0;
-					game.temp.slotFiveValue = 0;
-					game.temp.slotSixValue = 0;
-					game.temp.matchName = "";
-					game.temp.upSpeedName = "";
-					game.temp.downSpeedName = "";
-					game.temp.helpName = "";
-					game.temp.inventoryName = "";
-					game.temp.storeName = "";
-					game.temp.slotOneName = "";
-					game.temp.slotTwoName = "";
-					game.temp.slotThreeName = "";
-					game.temp.slotFourName = "";
-					game.temp.slotFiveName = "";
-					game.temp.slotSixName = "";
+					game.temp.matchValue = 32;
+					game.temp.upSpeedValue = 38;
+					game.temp.downSpeedValue = 40;
+					game.temp.helpValue = 72;
+					game.temp.inventoryValue = 73;
+					game.temp.storeValue = 83;
+					game.temp.slotOneValue = 49;
+					game.temp.slotTwoValue = 50;
+					game.temp.slotThreeValue = 51;
+					game.temp.slotFourValue = 52;
+					game.temp.slotFiveValue = 53;
+					game.temp.slotSixValue = 54;
+					game.temp.matchName = "Space";
+					game.temp.upSpeedName = "Up";
+					game.temp.downSpeedName = "Down";
+					game.temp.helpName = "H";
+					game.temp.inventoryName = "I";
+					game.temp.storeName = "S";
+					game.temp.slotOneName = "1";
+					game.temp.slotTwoName = "2";
+					game.temp.slotThreeName = "3";
+					game.temp.slotFourName = "4";
+					game.temp.slotFiveName = "5";
+					game.temp.slotSixName = "6";
 					game.isPlayerScreen = true;
 					delete game.oneButton;
 					delete game.twoButton;
@@ -330,7 +337,7 @@ function checkKey(e){
 				if(game.players.length < game.numOfPlayers){
 					game.temp.nameInput.isHighlighted = true;
 					
-					game.refXCor = canvas.width;
+					game.temp.refXCor = canvas.width;
 
 					//Reset the Temp Values
 					game.temp.nameValue = "";
@@ -359,12 +366,14 @@ function checkKey(e){
 					game.temp.slotFiveName = "";
 					game.temp.slotSixName = "";
 
+					game.okButton.name = "Create Player 2";
 					game.okButton.isInactive = true;
 					game.okButton.isHighlighted = false;
 				} else {
 					if (game.numOfPlayers === 2){
 						canvas.width = 1400;
 					}
+					game.okButton.name = "Return to the Game";
 					game.isRecordTime = true;
 					game.isGameScreen = true;
 					delete game.temp;
@@ -490,6 +499,7 @@ function Game(){
 	this.startTime = 0;
 	this.endTime = 0;
 	this.players = [];
+	this.winner = 0;
 	this.isStartScreen = true;
 	this.isAboutScreen = false;
 	this.isGameSetupScreen = false;
@@ -509,6 +519,8 @@ Game.prototype.initialize = function(){
 Game.prototype.checksWin = function(player){
 	//Checks if the victory points of the player matches the goal
 	if(player.victoryPoints === this.toWin){
+		this.isRecordTime = true;
+		this.okButton.name = "Play Again. You KNOW You Want To";
 		this.isGameOver = true;
 		this.isGameScreen = false;
 	}
@@ -518,6 +530,16 @@ Game.prototype.render = function(currentTime){
 	//This is the Looping function that renders the game
 	context.save();
 	context.clearRect(0,0,canvas.width,canvas.height);
+	if(this.isRecordTime) {
+			if(this.gamePlayState){
+				this.endTime = currentTime;
+				this.gamePlayState = false;
+			} else {
+				this.startTime = currentTime;
+				this.gamePlayState = true;
+			}
+			this.isRecordTime = false;
+		}
 	if(this.isStartScreen){
 		this.startScreenRender();
 	} else if (this.isAboutScreen){
@@ -527,21 +549,9 @@ Game.prototype.render = function(currentTime){
 	} else if (this.isPlayerScreen){
 		this.playerScreenRender();
 	} else if (this.isGameScreen){
-		if(this.isRecordTime) {
-			if(this.gamePlayState){
-				this.endTime = currentTime;
-				this.gamePlayState = false;
-			} else {
-				this.startTime = currentTime;
-				console.log("this is " + this.startTime + " the start Time. the Current Time is " + currentTime);
-				this.gamePlayState = true;
-			}
-
-			this.isRecordTime = false;
-		}
 		this.gameScreenRender(currentTime);
 	} else if (this.isGameOver){
-		this.gameOverScreenRender();
+		this.gameOverRender();
 	}
 
 	//Context Restore
@@ -660,8 +670,16 @@ Game.prototype.gameScreenRender = function(currentTime){
 
 Game.prototype.gameOverRender = function(){
 	context.font = "bold 24pt sans-serif";
+	context.textAlign = "center";
+	context.textBaseline = "middle";
 	context.fillStyle = "black";
-	context.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+	context.fillText("GAME OVER", canvas.width / 2, canvas.height / 4);
+
+	context.font = "bold 16pt sans-serif";
+
+	context.fillText("Game was completed in " + msToTime(this.endTime - this.startTime) + ".", canvas.width / 2, canvas.height / 2);
+
+	this.okButton.render((canvas.width - context.measureText("   " + this.okButton.name + "   ").width) / 2, canvas.height * 11 / 12 - canvas.height / 32, context.measureText("   " + this.okButton.name + "   ").width, canvas.height / 12);
 };
 
 Game.prototype.reset = function(){
@@ -687,18 +705,18 @@ function Player(name, refXCor, refYCor, refXLength, refYLength, match, matchName
 	this.isStoreRendered = false;//Tracks if the store being rendered
 	this.notification = new Notification();
 	this.isHelpScreen = false; //Tracks if the Help Screen is being rendered.
-	this.keys = new KeyControls(match, matchName, this.checksCollision, 
-								upSpeed, upSpeedName, this.upSpeedUse, 
-								downSpeed, downSpeedName, this.downSpeedUse, 
-								help, helpName, this.helpUse, 
-								inventory, inventoryName, this.inventoryUse, 
-								store, storeName, this.storeUse, 
-								slotOne, slotOneName, this.slotOneUse, 
-								slotTwo, slotTwoName, this.slotTwoUse, 
-								slotThree, slotThreeName, this.slotThreeUse, 
-								slotFour, slotFourName, this.slotFourUse, 
-								slotFive, slotFiveName, this.slotFiveUse, 
-								slotSix, slotSixName, this.slotSixUse); //This will hold the keys for each player 
+	this.keys = new KeyControls(match, matchName, this.checksCollision.bind(this), 
+								upSpeed, upSpeedName, this.upSpeedUse.bind(this), 
+								downSpeed, downSpeedName, this.downSpeedUse.bind(this), 
+								help, helpName, this.helpUse.bind(this), 
+								inventory, inventoryName, this.inventoryUse.bind(this), 
+								store, storeName, this.storeUse.bind(this), 
+								slotOne, slotOneName, this.slotOneUse.bind(this), 
+								slotTwo, slotTwoName, this.slotTwoUse.bind(this), 
+								slotThree, slotThreeName, this.slotThreeUse.bind(this), 
+								slotFour, slotFourName, this.slotFourUse.bind(this), 
+								slotFive, slotFiveName, this.slotFiveUse.bind(this), 
+								slotSix, slotSixName, this.slotSixUse.bind(this)); //This will hold the keys for each player 
 	this.refXCor = refXCor;
 	this.refYCor = refYCor;
 	this.refXLength = refXLength;
@@ -1320,9 +1338,9 @@ function generateRandomItem (type, numOfPlayers){
 				}
 			}
 		} else if (type === "good"){
-			for (var i = 0; i < itemKeys.length; i++){
-				if (availableItems[itemKeys[i]].type === "good" && availableItems[itemKeys[i]].target === "self") {
-					selection.push(itemKeys[i]);
+			for (var h = 0; h < itemKeys.length; h++){
+				if (availableItems[itemKeys[h]].type === "good" && availableItems[itemKeys[h]].target === "self") {
+					selection.push(itemKeys[h]);
 				}
 			}
 		} else if (type === "bad"){
