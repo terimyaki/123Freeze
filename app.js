@@ -32,13 +32,13 @@ function checkKey(e){
 		switch (e.keyCode) {
 			case 13: // Enter Key
 				if(game.startButton.isHighlighted === true){
-					game.isPlayerScreen = true;
+					game.isGameSetupScreen = true;
 					game.okButton.name = "Play Game";
 					game.okButton.isHighlighted = false;
 					delete game.startButton;
 					delete game.aboutButton;
-					game.onePlayerButton = new Button("Single Player Mode", true);
-					game.twoPlayerButton = new Button("Two Player Mode", false);
+					game.oneButton = new Button("Single Player Mode", true);
+					game.twoButton = new Button("Two Player Mode", false);
 					game.isStartScreen = false;
 				} else {
 					game.isAboutScreen = true;
@@ -66,83 +66,314 @@ function checkKey(e){
 			game.isAboutScreen = false;
 		}
 
-	} else if(game.isPlayerScreen){
+	} else if (game.isGameSetupScreen){
 		if(game.numOfPlayers === 0){
 			switch(e.keyCode){
 				case 13:// Enter Key
-					game.nameInput = new InputField("Enter Player Name", true);
-					game.matchKey = new InputField("Match Key", false);
-					game.upSpeedKey = new InputField("Increase Speed", false);
-					game.downSpeedKey = new InputField("Decrease Speed", false);
-					game.helpKey = new InputField("Help/Info", false);
-					game.inventoryKey = new InputField("Inventory", false);
-					game.storeKey = new InputField("Store", false);
-					game.slotOne = new InputField("Slot 1", false);
-					game.slotTwo = new InputField("Slot 2", false);
-					game.slotThree = new InputField("Slot 3", false);
-					game.slotFour = new InputField("Slot 4", false);
-					game.slotFive = new InputField("Slot 5", false);
-					game.slotSix = new InputField("Slot 6", false);
-					game.nameValue = "";
-					game.matchValue = 0;
-					game.upSpeedValue = 0;
-					game.helpValue = 0;
-					game.inventoryValue = 0;
-					game.storeValue = 0;
-					game.slotOneValue = 0;
-					game.slotTwoValue = 0;
-					game.slotThreeValue = 0;
-					game.slotFourValue = 0;
-					game.slotFiveValue = 0;
-					game.slotSixValue = 0;
-					game.name = "";
-					game.matchName = "";
-					game.upSpeedName = "";
-					game.helpName = "";
-					game.inventoryName = "";
-					game.storeName = "";
-					game.slotOneName = "";
-					game.slotTwoName = "";
-					game.slotThreeName = "";
-					game.slotFourName = "";
-					game.slotFiveName = "";
-					game.slotSixName = "";
-					if(game.twoPlayerButton.isHighlighted === true){
+					game.threeButton = new Button("9", false);
+					if(game.twoButton.isHighlighted === true){
 						game.numOfPlayers = 2;
-						game.createPlayerButton = new Button("Create Player", false);
-						canvas.width = 1400;
-						game.twoPlayerButton.isHighlighted = false;
-						game.twoPlayerButton.isInactive = true;
+						game.okButton.name = "Create Player 1";
+						game.twoButton.isHighlighted = false;
+						game.oneButton.isHighlighted = false;
+						
+
 					} else {
 						game.numOfPlayers = 1;
 						game.okButton.name = "Create Player & Play Game";
-						game.onePlayerButton.isHighlighted = false;
-						game.onePlayerButton.isInactive = true;
 					}
+					game.twoButton.name = "5";
+					game.oneButton.name = "3";
+					game.okButton.isInactive = true;
 					break;
 				case 37: // Left Arrow
-					if(game.twoPlayerButton.isHighlighted === true){
-						game.onePlayerButton.isHighlighted = true;
-						game.twoPlayerButton.isHighlighted = false;
+					if(game.twoButton.isHighlighted === true){
+						game.oneButton.isHighlighted = true;
+						game.twoButton.isHighlighted = false;
 					}
 					break;
 				case 39: //Right Arrow
-					if(game.onePlayerButton.isHighlighted === true){
-						game.twoPlayerButton.isHighlighted = true;
-						game.onePlayerButton.isHighlighted = false;
+					if(game.oneButton.isHighlighted === true){
+						game.twoButton.isHighlighted = true;
+						game.oneButton.isHighlighted = false;
 					}
 					break;
 			}
-		} else if(game.players.length === game.numOfPlayers) {
-			if (e.keyCode === 13) { // Enter Key
-				game.isGameScreen = true;
-				game.isPlayersScreen = false;
+		} else {
+			switch(e.keyCode){
+				case 13:// Enter Key
+					if(game.oneButton.isHighlighted === true){
+						game.toWin = 3;
+					} else if (game.twoButton.isHighlighted === true){
+						game.toWin = 5;
+					} else if (game.threeButton.isHighlighted === true){
+						game.toWin = 9;
+					}
+					game.temp = {};
+					game.temp.refXCor = 0;
+					game.temp.refYCor = 0;
+					game.temp.refXLength = canvas.width;
+					game.temp.refYLength = canvas.height;
+					game.temp.nameInput = new InputField("Enter Player Name", true);
+					game.temp.matchInput = new InputField("Match Key", false);
+					game.temp.upSpeedInput = new InputField("Increase Speed", false);
+					game.temp.downSpeedInput = new InputField("Decrease Speed", false);
+					game.temp.helpInput = new InputField("Help/Info", false);
+					game.temp.inventoryInput = new InputField("Inventory", false);
+					game.temp.storeInput = new InputField("Store", false);
+					game.temp.slotOneInput = new InputField("Slot 1", false);
+					game.temp.slotTwoInput = new InputField("Slot 2", false);
+					game.temp.slotThreeInput = new InputField("Slot 3", false);
+					game.temp.slotFourInput = new InputField("Slot 4", false);
+					game.temp.slotFiveInput = new InputField("Slot 5", false);
+					game.temp.slotSixInput = new InputField("Slot 6", false);
+					game.temp.nameValue = "";
+					game.temp.keyCodeList = [];
+					game.temp.matchValue = 0;
+					game.temp.upSpeedValue = 0;
+					game.temp.downSpeedValue = 0;
+					game.temp.helpValue = 0;
+					game.temp.inventoryValue = 0;
+					game.temp.storeValue = 0;
+					game.temp.slotOneValue = 0;
+					game.temp.slotTwoValue = 0;
+					game.temp.slotThreeValue = 0;
+					game.temp.slotFourValue = 0;
+					game.temp.slotFiveValue = 0;
+					game.temp.slotSixValue = 0;
+					game.temp.matchName = "";
+					game.temp.upSpeedName = "";
+					game.temp.downSpeedName = "";
+					game.temp.helpName = "";
+					game.temp.inventoryName = "";
+					game.temp.storeName = "";
+					game.temp.slotOneName = "";
+					game.temp.slotTwoName = "";
+					game.temp.slotThreeName = "";
+					game.temp.slotFourName = "";
+					game.temp.slotFiveName = "";
+					game.temp.slotSixName = "";
+					game.isPlayerScreen = true;
+					delete game.oneButton;
+					delete game.twoButton;
+					delete game.threeButton;
+					game.isGameSetupScreen = false;
+					break;
+				case 37: // Left Arrow
+					if(game.twoButton.isHighlighted === true){
+						game.oneButton.isHighlighted = true;
+						game.twoButton.isHighlighted = false;
+					} else if(game.threeButton.isHighlighted === true){
+						game.twoButton.isHighlighted = true;
+						game.threeButton.isHighlighted = false;
+					}
+					break;
+				case 39: //Right Arrow
+					if(game.oneButton.isHighlighted === true){
+						game.twoButton.isHighlighted = true;
+						game.oneButton.isHighlighted = false;
+					} else if(game.twoButton.isHighlighted === true){
+						game.threeButton.isHighlighted = true;
+						game.twoButton.isHighlighted = false;
+					}
+					break;
+				}
 			}
-		} else if(game.players.length === 0){
+	} else if(game.isPlayerScreen){
+		if(game.temp.nameInput.isHighlighted === true){
+			if (e.keyCode === 13 && game.temp.nameValue !== ""){ // Enter Key
+				game.temp.matchInput.isHighlighted = true;
+				game.temp.nameInput.isHighlighted = false;
+			} else if (e.keyCode == 8 && game.temp.nameValue.length - 1 >= 0){
+				game.temp.nameValue = game.temp.nameValue.substring(0, game.temp.nameValue.length - 1);
+			} else if (game.temp.nameValue.length < 25 && keyCodeToChar(e.keyCode)[0] === true){
+				game.temp.nameValue += keyCodeToChar(e.keyCode)[1];
+			}
 
-		} else if(game.players.length === 1){
+		} else if (game.temp.matchInput.isHighlighted === true){
+			if (e.keyCode === 13 && game.temp.matchValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.matchValue);
+				
+				game.temp.helpInput.isHighlighted = true;
+				game.temp.matchInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.matchValue = e.keyCode;
+				game.temp.matchName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.helpInput.isHighlighted === true){
+			if (e.keyCode === 13  && game.temp.helpValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.helpValue);
 
+				game.temp.upSpeedInput.isHighlighted = true;
+				game.temp.helpInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.helpValue = e.keyCode;
+				game.temp.helpName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.upSpeedInput.isHighlighted === true){
+			if (e.keyCode === 13 &&  game.temp.upSpeedValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.upSpeedValue);
+
+				game.temp.downSpeedInput.isHighlighted = true;
+				game.temp.upSpeedInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.upSpeedValue = e.keyCode;
+				game.temp.upSpeedName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.downSpeedInput.isHighlighted === true){
+			if (e.keyCode === 13 && game.temp.downSpeedValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.downSpeedValue);
+
+				game.temp.inventoryInput.isHighlighted = true;
+				game.temp.downSpeedInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.downSpeedValue = e.keyCode;
+				game.temp.downSpeedName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.inventoryInput.isHighlighted === true){
+			if (e.keyCode === 13 && game.temp.inventoryValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.inventoryValue);
+				game.temp.storeInput.isHighlighted = true;
+				game.temp.inventoryInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.inventoryValue = e.keyCode;
+				game.temp.inventoryName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.storeInput.isHighlighted === true){
+			if (e.keyCode === 13 && game.temp.storeValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.storeValue);
+
+				game.temp.slotOneInput.isHighlighted = true;
+				game.temp.storeInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.storeValue = e.keyCode;
+				game.temp.storeName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.slotOneInput.isHighlighted === true){
+			if (e.keyCode === 13 && game.temp.slotOneValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.slotOneValue);
+
+				game.temp.slotTwoInput.isHighlighted = true;
+				game.temp.slotOneInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.slotOneValue = e.keyCode;
+				game.temp.slotOneName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.slotTwoInput.isHighlighted === true){
+			if (e.keyCode === 13 && game.temp.slotTwoValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.slotTwoValue);
+
+				game.temp.slotThreeInput.isHighlighted = true;
+				game.temp.slotTwoInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.slotTwoValue = e.keyCode;
+				game.temp.slotTwoName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.slotThreeInput.isHighlighted === true){
+			if (e.keyCode === 13  && game.temp.slotThreeValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.slotThreeValue);
+
+				game.temp.slotFourInput.isHighlighted = true;
+				game.temp.slotThreeInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.slotThreeValue = e.keyCode;
+				game.temp.slotThreeName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.slotFourInput.isHighlighted === true){
+			if (e.keyCode === 13  && game.temp.slotFourValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.slotFourValue);
+
+				game.temp.slotFiveInput.isHighlighted = true;
+				game.temp.slotFourInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.slotFourValue = e.keyCode;
+				game.temp.slotFourName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.slotFiveInput.isHighlighted === true){
+			if (e.keyCode === 13  && game.temp.slotFiveValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.slotFiveValue);
+
+				game.temp.slotSixInput.isHighlighted = true;
+				game.temp.slotFiveInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.slotFiveValue = e.keyCode;
+				game.temp.slotFiveName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.temp.slotSixInput.isHighlighted === true){
+			if (e.keyCode === 13 && game.temp.slotSixValue !== 0){ // Enter Key
+				game.temp.keyCodeList.push(game.temp.slotSixValue);
+
+				game.okButton.isHighlighted = true;
+				game.okButton.isInactive = false;
+				game.temp.slotSixInput.isHighlighted = false;
+			} else if(game.temp.keyCodeList.indexOf(e.keyCode) === -1 && keyCodeToChar(e.keyCode) !== undefined){
+				game.temp.slotSixValue = e.keyCode;
+				game.temp.slotSixName = keyCodeToChar(e.keyCode)[1];
+			}
+		} else if (game.okButton.isHighlighted === true){
+			if (e.keyCode === 13){ // Enter Key
+				var player = new Player(game.temp.nameValue, game.temp.refXCor, game.temp.refYCor, game.temp.refXLength, game.temp.refYLength, 
+										game.temp.matchValue, game.temp.matchName, 
+										game.temp.upSpeedValue, game.temp.upSpeedName, 
+										game.temp.downSpeedValue, game.temp.downSpeedName, 
+										game.temp.helpValue, game.temp.helpName, 
+										game.temp.inventoryValue, game.temp.inventoryName, 
+										game.temp.storeValue, game.temp.storeName, 
+										game.temp.slotOneValue, game.temp.slotOneName, 
+										game.temp.slotTwoValue, game.temp.slotTwoName, 
+										game.temp.slotThreeValue, game.temp.slotThreeName, 
+										game.temp.slotFourValue, game.temp.slotFourName, 
+										game.temp.slotFiveValue, game.temp.slotFiveName, 
+										game.temp.slotSixValue, game.temp.slotSixName);
+				game.players.push(player);
+
+				if(game.players.length < game.numOfPlayers){
+					game.temp.nameInput.isHighlighted = true;
+					
+					game.refXCor = canvas.width;
+
+					//Reset the Temp Values
+					game.temp.nameValue = "";
+					game.temp.matchValue = 0;
+					game.temp.upSpeedValue = 0;
+					game.temp.downSpeedValue = 0;
+					game.temp.helpValue = 0;
+					game.temp.inventoryValue = 0;
+					game.temp.storeValue = 0;
+					game.temp.slotOneValue = 0;
+					game.temp.slotTwoValue = 0;
+					game.temp.slotThreeValue = 0;
+					game.temp.slotFourValue = 0;
+					game.temp.slotFiveValue = 0;
+					game.temp.slotSixValue = 0;
+					game.temp.matchName = "";
+					game.temp.upSpeedName = "";
+					game.temp.downSpeedName = "";
+					game.temp.helpName = "";
+					game.temp.inventoryName = "";
+					game.temp.storeName = "";
+					game.temp.slotOneName = "";
+					game.temp.slotTwoName = "";
+					game.temp.slotThreeName = "";
+					game.temp.slotFourName = "";
+					game.temp.slotFiveName = "";
+					game.temp.slotSixName = "";
+
+					game.okButton.isInactive = true;
+					game.okButton.isHighlighted = false;
+				} else {
+					if (game.numOfPlayers === 2){
+						canvas.width = 1400;
+					}
+					game.isRecordTime = true;
+					game.isGameScreen = true;
+					delete game.temp;
+					game.isPlayerScreen = false;
+				}
+
+			}
 		}
+		
 	} else if (game.isGameScreen){
 		//Player 1's Control
 		switch (e.keyCode) {
@@ -254,10 +485,14 @@ function Game(){
 	this.number = new NumGenerator(0, 10);
 	this.store = new ItemStorage("Store", 6);
 	this.numOfPlayers = 0;
-	this.pastGameTime = 0;
+	this.isRecordTime = false;
+	this.gamePlayState = false;
+	this.startTime = 0;
+	this.endTime = 0;
 	this.players = [];
 	this.isStartScreen = true;
 	this.isAboutScreen = false;
+	this.isGameSetupScreen = false;
 	this.isPlayerScreen = false;
 	this.isGameScreen = false;
 	this.isGameOver = false;
@@ -265,34 +500,10 @@ function Game(){
 }
 
 Game.prototype.initialize = function(){
-	// this.store.set.push(generateRandomItem("special", this.numOfPlayers));
-	// for (var i = 1; i < this.store.maxHold; i++){
-	// 	this.store.set.push(generateRandomItem("good", this.numOfPlayers));
-	// }
-	// this.getInfo();
+	//Initializes the Game
 	this.startButton = new Button("Start Game", true);
 	this.aboutButton  = new Button("About", false);
 	this.render();
-};
-
-Game.prototype.getInfo = function(){
-	var name, player;
-
-	if(confirm("Welcome to the game by T, 1-2-Fre3eze! Press OK to play in Single Player mode. Press Cancel for Head-to-Head game.")){
-		name = prompt("This is Single Player mode. Please enter your gamertag or you will be Alex.", "Alex");
-		player = new Player(name, 0, 0, canvas.width, canvas.height);
-		this.players.push(player);
-		this.numOfPlayers = this.players.length;
-	} else {
-		canvas.width = 1400;
-		name = prompt("This is Head-to-Head mode. Please enter your Player 1's gamertag or it will be Alex.", "Alex");
-		player = new Player(name, 0, 0, canvas.width / 2, canvas.height);
-		this.players.push(player);
-		name = prompt("Please enter your Player 2's gamertag or it will be Terry.", "Terry");
-		player = new Player(name, canvas.width / 2, 0, canvas.width / 2, canvas.height);
-		this.players.push(player);
-		this.numOfPlayers = this.players.length;
-	}
 };
 
 Game.prototype.checksWin = function(player){
@@ -311,10 +522,24 @@ Game.prototype.render = function(currentTime){
 		this.startScreenRender();
 	} else if (this.isAboutScreen){
 		this.aboutScreenRender();
+	} else if (this.isGameSetupScreen) {
+		this.gameSetupScreenRender();
 	} else if (this.isPlayerScreen){
 		this.playerScreenRender();
 	} else if (this.isGameScreen){
-		this.gameScreenRender();
+		if(this.isRecordTime) {
+			if(this.gamePlayState){
+				this.endTime = currentTime;
+				this.gamePlayState = false;
+			} else {
+				this.startTime = currentTime;
+				console.log("this is " + this.startTime + " the start Time. the Current Time is " + currentTime);
+				this.gamePlayState = true;
+			}
+
+			this.isRecordTime = false;
+		}
+		this.gameScreenRender(currentTime);
 	} else if (this.isGameOver){
 		this.gameOverScreenRender();
 	}
@@ -372,7 +597,7 @@ Game.prototype.aboutScreenRender = function(){
 
 };
 
-Game.prototype.playerScreenRender = function(){
+Game.prototype.gameSetupScreenRender = function(){
 	context.textAlign = "center";
 	context.textBaseline = "middle";
 	context.fillStyle = "black";
@@ -380,149 +605,51 @@ Game.prototype.playerScreenRender = function(){
 	context.fillText("Set up Game", canvas.width / 2, canvas.height / 16);
 
 	if(this.numOfPlayers === 0){
-		// Renders the Player Modes
 		context.font = "bold 16pt sans-serif";
-		this.onePlayerButton.render(canvas.width / 2 - context.measureText("   " + this.onePlayerButton.name + "   ").width - canvas.width * 3 / 32, canvas.height / 2, context.measureText("   " + this.onePlayerButton.name + "   ").width, canvas.height / 12);
-		this.twoPlayerButton.render(canvas.width / 2 + canvas.width * 3 / 32, canvas.height / 2, context.measureText("   " + this.twoPlayerButton.name + "   ").width, canvas.height / 12);
+		// Renders the Player Modes
+		this.oneButton.render(canvas.width / 2 - context.measureText("   " + this.oneButton.name + "   ").width - canvas.width * 3 / 32, canvas.height / 2, context.measureText("   " + this.oneButton.name + "   ").width, canvas.height / 12);
+		this.twoButton.render(canvas.width / 2 + canvas.width * 3 / 32, canvas.height / 2, context.measureText("   " + this.twoButton.name + "   ").width, canvas.height / 12);
 
 	} else {
-		var playerOne, playerOneControls, 
-			playerTwo, playerTwoControls,
-			matchName, helpName,
-			upSpeedName, downSpeedName,
-			inventoryName, storeName,
-			slotOneName, slotTwoName, slotThreeName, slotFourName, slotFiveName, slotSixName;
-		if (this.players[0] !== undefined){
-			playerOne = this.players[0];
-			playerOneControls = this.players[0].keys;
-			matchName = "match.matchName";
-			helpName = "help.helpName";
-			/*upSpeedName
-			downSpeedName
-			inventoryName
-			storeName
-			slotOneName
-			slotTwoName
-			slotThreeName
-			slotFourName
-			slotFiveName
-			slotSixName;*/
+		context.font = "bold 24pt sans-serif";
+		this.oneButton.render(canvas.width * 3 / 8 - context.measureText("   " + this.threeButton.name + "   ").width, canvas.height / 2, context.measureText("   " + this.threeButton.name + "   ").width, canvas.height / 12);
+		this.twoButton.render(canvas.width / 2 - context.measureText("   " + this.threeButton.name + "   ").width / 2, canvas.height / 2, context.measureText("   " + this.threeButton.name + "   ").width, canvas.height / 12);
+		this.threeButton.render(canvas.width * 5 / 8, canvas.height / 2, context.measureText("   " + this.threeButton.name + "   ").width, canvas.height / 12);
 
-		} else {
-			playerOne = this.
-			playerOneControls = this;
-			matchName = "matchName";
-			helpName = "helpName";
-			/*upSpeedName
-			downSpeedName
-			inventoryName
-			storeName
-			slotOneName
-			slotTwoName
-			slotThreeName
-			slotFourName
-			slotFiveName
-			slotSixName;*/
-		}
-
-		if(this.players[1] !== undefined){
-			playerTwo = this.players[1];
-			playerTwoControls = this.players[1].keys;
-			matchName = "match.matchName";
-			helpName = "help.helpName";
-			/*upSpeedName
-			downSpeedName
-			inventoryName
-			storeName
-			slotOneName
-			slotTwoName
-			slotThreeName
-			slotFourName
-			slotFiveName
-			slotSixName;*/
-		} else {
-			playerTwo = this;
-			playerTwoControls = this;
-			matchName = "matchName";
-			helpName = "helpName"; 
-			/*upSpeedName
-			downSpeedName
-			inventoryName
-			storeName
-			slotOneName
-			slotTwoName
-			slotThreeName
-			slotFourName
-			slotFiveName
-			slotSixName*/		}
-
-		// Renders the Player Modes
-		if(this.numOfPlayers === 1){
-			this.nameInput.render(canvas.width / 6, canvas.height * 4 / 32, canvas.width * 4 / 6 ,canvas.height / 16, playerOne.name);
-			this.matchKey.render(canvas.width / 6, canvas.height * 7 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.matchName);
-			this.helpKey.render(canvas.width / 2, canvas.height * 7 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.helpName);
-			this.upSpeedKey.render(canvas.width / 6, canvas.height * 10 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.upSpeedName);
-			this.downSpeedKey.render(canvas.width / 2, canvas.height * 10 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.downSpeedName);
-			this.inventoryKey.render(canvas.width / 6, canvas.height * 13 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.inventoryName);
-			this.storeKey.render(canvas.width / 2, canvas.height * 13 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.storeName);
-			this.slotOne.render(canvas.width / 6, canvas.height * 16 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.slotOneName);
-			this.slotTwo.render(canvas.width / 2, canvas.height * 16 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.slotTwoName);
-			this.slotThree.render(canvas.width / 6, canvas.height * 19 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.slotThreeName);
-			this.slotFour.render(canvas.width / 2, canvas.height * 19 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.slotFourName);
-			this.slotFive.render(canvas.width / 6, canvas.height * 22 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.slotFiveName);
-			this.slotSix.render(canvas.width / 2, canvas.height * 22 / 32, canvas.width / 3 ,canvas.height / 16, playerOneControls.slotSixName);
-		} else {
-			// Render Player 1's Setup
-			this.nameInput.render(canvas.width / 12, canvas.height * 4 / 32, canvas.width * 4 / 12 ,canvas.height / 16, playerOne.name);
-			this.matchKey.render(canvas.width / 12, canvas.height * 7 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.matchName);
-			this.helpKey.render(canvas.width / 4, canvas.height * 7 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.helpName);
-			this.upSpeedKey.render(canvas.width / 12, canvas.height * 10 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.upSpeedName);
-			this.downSpeedKey.render(canvas.width / 4, canvas.height * 10 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.downSpeedName);
-			this.inventoryKey.render(canvas.width / 12, canvas.height * 13 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.inventoryName);
-			this.storeKey.render(canvas.width / 4, canvas.height * 13 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.storeName);
-			this.slotOne.render(canvas.width / 12, canvas.height * 16 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.slotOneName);
-			this.slotTwo.render(canvas.width / 4, canvas.height * 16 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.slotTwoName);
-			this.slotThree.render(canvas.width / 12, canvas.height * 19 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.slotThreeName);
-			this.slotFour.render(canvas.width / 4, canvas.height * 19 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.slotFourName);
-			this.slotFive.render(canvas.width / 12, canvas.height * 22 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.slotFiveName);
-			this.slotSix.render(canvas.width / 4, canvas.height * 22 / 32, canvas.width / 6 ,canvas.height / 16, playerOneControls.slotSixName);
-			
-			//Render the Create Button
-			if (this.players.length === 0){
-				this.createPlayerButton.render((canvas.width - context.measureText("   " + this.createPlayerButton.name + "   ").width) / 6, canvas.height * 13 / 16 - canvas.height / 12, context.measureText("   " + this.createPlayerButton.name + "   ").width, canvas.height / 16);
-			} else if(this.players.length === 1){
-				this.createPlayerButton.render((canvas.width - context.measureText("   " + this.createPlayerButton.name + "   ").width) / 6, canvas.height * 13 / 16 - canvas.height / 12, context.measureText("   " + this.createPlayerButton.name + "   ").width, canvas.height / 16);
-			}
-
-			//Render Player 2's Setup
-			if(this.players.length > 0){
-
-			this.nameInput.render(canvas.width * 7 / 12, canvas.height * 4 / 32, canvas.width * 4 / 12 ,canvas.height / 16, playerTwo.name);
-			this.matchKey.render(canvas.width * 7 / 12, canvas.height * 7 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.matchName);
-			this.helpKey.render(canvas.width * 3 / 4, canvas.height * 7 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.helpName);
-			this.upSpeedKey.render(canvas.width * 7 / 12, canvas.height * 10 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.upSpeedName);
-			this.downSpeedKey.render(canvas.width * 3 / 4, canvas.height * 10 / 32, canvas.width / 6 ,canvas.height / 16,  playerTwoControls.downSpeedName);
-			this.inventoryKey.render(canvas.width * 7 / 12, canvas.height * 13 / 32, canvas.width / 6 ,canvas.height / 16,  playerTwoControls.inventoryName);
-			this.storeKey.render(canvas.width * 3 / 4, canvas.height * 13 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.storeName);
-			this.slotOne.render(canvas.width * 7 / 12, canvas.height * 16 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.slotOneName);
-			this.slotTwo.render(canvas.width * 3 / 4, canvas.height * 16 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.slotTwoName);
-			this.slotThree.render(canvas.width * 7 / 12, canvas.height * 19 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.slotThreeName);
-			this.slotFour.render(canvas.width * 3 / 4, canvas.height * 19 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.slotFourName);
-			this.slotFive.render(canvas.width * 7 / 12, canvas.height * 22 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.slotFiveName);
-			this.slotSix.render(canvas.width * 3 / 4, canvas.height * 22 / 32, canvas.width / 6 ,canvas.height / 16, playerTwoControls.slotSixName);
-			}
-
-		}
-
-
-		context.font = "bold 16pt sans-serif";
-		this.okButton.render((canvas.width - context.measureText("   " + this.okButton.name + "   ").width) / 2, canvas.height * 11 / 12 - canvas.height / 32, context.measureText("   " + this.okButton.name + "   ").width, canvas.height / 12);
+		context.font = "bold 20pt sans-serif";
+		context.textAlign = "center";
+		context.fillText("Victory Points to Play Up To", canvas.width / 2, canvas.height * 5 / 12);
 	}
+};
+
+Game.prototype.playerScreenRender = function(){
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillStyle = "black";
+	context.font = "bold 24pt sans-serif";
+	context.fillText("Set up Player Controls", canvas.width / 2, canvas.height / 16);
+
+	this.temp.nameInput.render(canvas.width / 6, canvas.height * 4 / 32, canvas.width * 4 / 6, canvas.height / 16, this.temp.nameValue);
+	this.temp.matchInput.render(canvas.width / 6, canvas.height * 7 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.matchName);
+	this.temp.helpInput.render(canvas.width / 2, canvas.height * 7 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.helpName);
+	this.temp.upSpeedInput.render(canvas.width / 6, canvas.height * 10 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.upSpeedName);
+	this.temp.downSpeedInput.render(canvas.width / 2, canvas.height * 10 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.downSpeedName);
+	this.temp.inventoryInput.render(canvas.width / 6, canvas.height * 13 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.inventoryName);
+	this.temp.storeInput.render(canvas.width / 2, canvas.height * 13 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.storeName);
+	this.temp.slotOneInput.render(canvas.width / 6, canvas.height * 16 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotOneName);
+	this.temp.slotTwoInput.render(canvas.width / 2, canvas.height * 16 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotTwoName);
+	this.temp.slotThreeInput.render(canvas.width / 6, canvas.height * 19 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotThreeName);
+	this.temp.slotFourInput.render(canvas.width / 2, canvas.height * 19 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotFourName);
+	this.temp.slotFiveInput.render(canvas.width / 6, canvas.height * 22 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotFiveName);
+	this.temp.slotSixInput.render(canvas.width / 2, canvas.height * 22 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotSixName);
+	
+	context.font = "bold 16pt sans-serif";
+	this.okButton.render((canvas.width - context.measureText("   " + this.okButton.name + "   ").width) / 2, canvas.height * 11 / 12 - canvas.height / 32, context.measureText("   " + this.okButton.name + "   ").width, canvas.height / 12);
 };
 
 
 
-Game.prototype.gameScreenRender = function(){
+Game.prototype.gameScreenRender = function(currentTime){
 //Render each player's screen
 	for(var j = 0; j < this.players.length; j ++){
 		this.players[j].render(this.store, this.number, currentTime);
@@ -531,7 +658,7 @@ Game.prototype.gameScreenRender = function(){
 };
 
 
-Game.prototype.gameOverRender = function(currentTime){
+Game.prototype.gameOverRender = function(){
 	context.font = "bold 24pt sans-serif";
 	context.fillStyle = "black";
 	context.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
@@ -725,7 +852,7 @@ Player.prototype.render = function(store, number, currentTime){
 	//Render Duration of the Game
 	context.font = "bold 24pt sans-serif";
 	context.fillStyle = "gray";
-	context.fillText(msToTime(currentTime), this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 15 / 64);
+	context.fillText(msToTime(currentTime - game.startTime), this.refXCor + this.refXLength / 2, this.refYCor + this.refYLength * 15 / 64);
 
 	//Render Title of Player's Metrics
 	context.font = "bold 16pt sans-serif";
@@ -1059,7 +1186,7 @@ InputField.prototype.render = function(xCor, yCor, xLength, yLength, text){
 	context.strokeRect(xCor + labelWidth, yCor, xLength - labelWidth, yLength);
 	
 	context.textAlign = "center";
-	context.fillText(text || "", xCor + labelWidth + (xLength - labelWidth) / 2, yCor + yLength / 2);
+	context.fillText(text, xCor + labelWidth + (xLength - labelWidth) / 2, yCor + yLength / 2);
 };
 
 InputField.prototype.highlightRender = function(xCor, yCor, xLength, yLength){
@@ -1096,7 +1223,7 @@ function Key(name, keyCode, keyName, use){
 
 function keyCodeToChar(keyCode){
 	return (function(){
-		var keyCodetoChar = {8:"Backspace",
+		var specialChar = {8:"Backspace",
 							9:"Tab",
 							13:"Enter",
 							16:"Shift",
@@ -1119,8 +1246,8 @@ function keyCodeToChar(keyCode){
 						};
 		if(keyCode in alphaNum){
 			return [true, alphaNum[keyCode]];
-		} else if (keyCode in keyCodetoChar){
-			return [false, keyCodeToChar[keyCode]];
+		} else if (keyCode in specialChar){
+			return [false, specialChar[keyCode]];
 		} else {
 			return undefined;
 		}
@@ -1199,9 +1326,9 @@ function generateRandomItem (type, numOfPlayers){
 				}
 			}
 		} else if (type === "bad"){
-			for (var i = 0; i < itemKeys.length; i++){
-				if (availableItems[itemKeys[i]].type === "bad") {
-					selection.push(itemKeys[i]);
+			for (var k = 0; k < itemKeys.length; k++){
+				if (availableItems[itemKeys[k]].type === "bad") {
+					selection.push(itemKeys[k]);
 				}
 			}
 		} else if (type === "special"){
