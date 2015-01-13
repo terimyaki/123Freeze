@@ -521,6 +521,7 @@ Game.prototype.checksWin = function(player){
 	if(player.victoryPoints === this.toWin){
 		this.isRecordTime = true;
 		this.okButton.name = "Play Again. You KNOW You Want To";
+		this.winner.push(player);
 		this.isGameOver = true;
 		this.isGameScreen = false;
 	}
@@ -672,15 +673,15 @@ Game.prototype.gameScreenRender = function(currentTime){
 
 
 Game.prototype.gameOverRender = function(){
-	context.font = "bold 24pt sans-serif";
+	context.font = "bolder 24pt sans-serif";
 	context.textAlign = "center";
 	context.textBaseline = "middle";
 	context.fillStyle = "black";
-	context.fillText("GAME OVER", canvas.width / 2, canvas.height / 4);
+	context.fillText("GAME OVER", canvas.width / 2, canvas.height / 16);
 
 	context.font = "bold 16pt sans-serif";
-
-	context.fillText("Game was completed in " + msToTime(this.endTime - this.startTime) + ".", canvas.width / 2, canvas.height / 2);
+	context.fillText("WINNER: " + this.winner[0].name, canvas.width / 2, canvas.height * 3/ 8);
+	context.fillText("Achieved " + this.toWin + " in " + msToTime(this.endTime - this.startTime) + ".", canvas.width / 2, canvas.height / 2);
 
 	this.okButton.render((canvas.width - context.measureText("   " + this.okButton.name + "   ").width) / 2, canvas.height * 11 / 12 - canvas.height / 32, context.measureText("   " + this.okButton.name + "   ").width, canvas.height / 12);
 };
@@ -813,6 +814,7 @@ Player.prototype.checksCollision = function(){
 	if (this.number.num === game.number.num) {
 		this.money += this.speed.multiplier;
 		game.number.changeNum();
+		this.notification.setNotify("FINALLY, you got one", true);
 	} else {
 		this.updateWrong = true; //Lets the player know that they mismatched.
 	}
@@ -975,6 +977,7 @@ Player.prototype.helpScreenRender= function(){
 Player.prototype.generateRandomNumber = function (currentTime){
 	if(this.updateWrong === true){
 		this.lastWrongTime = currentTime;
+		this.notification.setNotify("YOU MISSED AHAHAHA", false);
 		this.updateWrong = false;
 	} else if ((currentTime - this.lastWrongTime) < 3000){
 		// P-P-PAUSE
@@ -1014,7 +1017,7 @@ Notification.prototype.renderNotify  = function(currentTime, refXCor, refYCor, r
 			this.updateNotify = false;
 		}
 
-		if (currentTime - this.lastNotifyCall < 4000){
+		if (currentTime - this.lastNotifyCall < 3000){
 			if(this.moodGood === true){
 				context.fillStyle = 'rgb(0,250,154)'; // mediumspringgreen  #00FA9A
 			} else {
