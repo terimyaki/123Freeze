@@ -373,7 +373,7 @@ function checkKey(e){
 					if (game.numOfPlayers === 2){
 						canvas.width = 1400;
 					}
-					game.okButton.name = "Return to the Game";
+					game.okButton.name = "Press Help Key to Return to the Game";
 					game.isRecordTime = true;
 					game.isGameScreen = true;
 					delete game.temp;
@@ -499,7 +499,7 @@ function Game(){
 	this.startTime = 0;
 	this.endTime = 0;
 	this.players = [];
-	this.winner = 0;
+	this.winner = [];
 	this.isStartScreen = true;
 	this.isAboutScreen = false;
 	this.isGameSetupScreen = false;
@@ -640,18 +640,21 @@ Game.prototype.playerScreenRender = function(){
 	context.fillText("Set up Player Controls", canvas.width / 2, canvas.height / 16);
 
 	this.temp.nameInput.render(canvas.width / 6, canvas.height * 4 / 32, canvas.width * 4 / 6, canvas.height / 16, this.temp.nameValue);
-	this.temp.matchInput.render(canvas.width / 6, canvas.height * 7 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.matchName);
-	this.temp.helpInput.render(canvas.width / 2, canvas.height * 7 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.helpName);
-	this.temp.upSpeedInput.render(canvas.width / 6, canvas.height * 10 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.upSpeedName);
-	this.temp.downSpeedInput.render(canvas.width / 2, canvas.height * 10 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.downSpeedName);
-	this.temp.inventoryInput.render(canvas.width / 6, canvas.height * 13 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.inventoryName);
-	this.temp.storeInput.render(canvas.width / 2, canvas.height * 13 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.storeName);
-	this.temp.slotOneInput.render(canvas.width / 6, canvas.height * 16 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotOneName);
-	this.temp.slotTwoInput.render(canvas.width / 2, canvas.height * 16 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotTwoName);
-	this.temp.slotThreeInput.render(canvas.width / 6, canvas.height * 19 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotThreeName);
-	this.temp.slotFourInput.render(canvas.width / 2, canvas.height * 19 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotFourName);
-	this.temp.slotFiveInput.render(canvas.width / 6, canvas.height * 22 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotFiveName);
-	this.temp.slotSixInput.render(canvas.width / 2, canvas.height * 22 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotSixName);
+	
+	context.fillText("Customize player's controls below. Press Enter after setting your key to confirm.", canvas.width / 2, canvas.height * 8 / 32);
+
+	this.temp.matchInput.render(canvas.width / 6, canvas.height * 9 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.matchName);
+	this.temp.helpInput.render(canvas.width / 2, canvas.height * 9 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.helpName);
+	this.temp.upSpeedInput.render(canvas.width / 6, canvas.height * 12 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.upSpeedName);
+	this.temp.downSpeedInput.render(canvas.width / 2, canvas.height * 12 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.downSpeedName);
+	this.temp.inventoryInput.render(canvas.width / 6, canvas.height * 15 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.inventoryName);
+	this.temp.storeInput.render(canvas.width / 2, canvas.height * 15 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.storeName);
+	this.temp.slotOneInput.render(canvas.width / 6, canvas.height * 18 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotOneName);
+	this.temp.slotTwoInput.render(canvas.width / 2, canvas.height * 18 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotTwoName);
+	this.temp.slotThreeInput.render(canvas.width / 6, canvas.height * 21 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotThreeName);
+	this.temp.slotFourInput.render(canvas.width / 2, canvas.height * 21 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotFourName);
+	this.temp.slotFiveInput.render(canvas.width / 6, canvas.height * 24 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotFiveName);
+	this.temp.slotSixInput.render(canvas.width / 2, canvas.height * 24 / 32, canvas.width / 3 ,canvas.height / 16, this.temp.slotSixName);
 	
 	context.font = "bold 16pt sans-serif";
 	this.okButton.render((canvas.width - context.measureText("   " + this.okButton.name + "   ").width) / 2, canvas.height * 11 / 12 - canvas.height / 32, context.measureText("   " + this.okButton.name + "   ").width, canvas.height / 12);
@@ -852,6 +855,9 @@ Player.prototype.render = function(store, number, currentTime){
 	var playerMetricX = this.refXCor + this.refXLength / 32;
 	var targetMetricX = this.refXCor + this.refXLength * 31 / 32;
 
+	if(this.isHelpScreen){
+		this.helpScreenRender();
+	} else {
 	//Creates outside border of game
 	context.lineWidth = 1;
 	context.strokeStyle = "black";
@@ -920,13 +926,50 @@ Player.prototype.render = function(store, number, currentTime){
 	//Render Inventory or Store
 	this.inventory.render(this.isInventoryRendered, false, this.refXCor, this.refYCor, this.refXLength, this.refYLength);
 	this.renderStore(store);
-
-	if(this.isHelpScreen){
-		this.helpScreenRender();
 	}
+	
 };
 
 Player.prototype.helpScreenRender= function(){
+	context.font = "bolder 24pt sans-serif";
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillStyle = "black";
+	context.fillText("Help", this.refXCor + this.refXLength / 2, this.refYLength / 16);
+
+	context.font = "bold 16pt sans-serif";
+	context.fillStyle = "purple";
+	context.fillText("Goal: Get Target number of Victory Points in quickest time.", this.refXCor + this.refXLength / 2, this.refYLength * 5/ 32);
+
+	context.fillStyle = "black";
+	context.fillText("Item Code", this.refXCor + this.refXLength / 2, this.refYLength * 15 / 64);
+	context.fillText("Your Player Controls", this.refXCor + this.refXLength /2, this.refYLength * 26 / 64);
+
+	context.font = "normal 14pt sans-serif";
+	context.textAlign = "left";
+	context.fillText("VP - Victory Points", this.refXCor + this.refXLength / 16, this.refYLength * 18 / 64);
+	context.fillText("BS - Base Speed", this.refXCor + this.refXLength / 16, this.refYLength * 21 / 64);
+	context.fillText("TR - Target Range", this.refXCor + this.refXLength * 17 /32, this.refYLength * 18 /64);
+	context.fillText("MR - Match Range", this.refXCor + this.refXLength * 17 /32, this.refYLength * 21 /64);
+
+	//Render Player's Controls
+	context.fillText("[" + this.keys.match.keyName + "] - Match Number to Target Number For Money", this.refXCor + this.refXLength / 16, this.refYLength * 29 / 64);
+	context.fillText("[" + this.keys.upSpeed.keyName + "] - Increase Speed Multiplier For More Money", this.refXCor + this.refXLength / 16, this.refYLength * 32 / 64);
+	context.fillText("[" + this.keys.downSpeed.keyName + "] - Decrease Speed Multiplier", this.refXCor + this.refXLength / 16, this.refYLength * 35 / 64);
+	context.fillText("[" + this.keys.help.keyName + "] - Toggle Help Screen During Game", this.refXCor + this.refXLength / 16, this.refYLength * 38 / 64);
+	context.fillText("[" + this.keys.inventory.keyName + "] - See Inventory of Purchased Items", this.refXCor + this.refXLength / 16, this.refYLength * 41 / 64);
+	context.fillText("[" + this.keys.store.keyName + "] - See Store to Purchase Items with Your Money", this.refXCor + this.refXLength / 16, this.refYLength * 44 / 64);
+	context.fillText("[" + this.keys.slotOne.keyName + "] - Select Slot 1", this.refXCor + this.refXLength / 16, this.refYLength * 47 / 64);
+	context.fillText("[" + this.keys.slotTwo.keyName + "] - Select Slot 2", this.refXCor + this.refXLength * 17 / 32, this.refYLength * 47 / 64);
+	context.fillText("[" + this.keys.slotThree.keyName + "] - Select Slot 3", this.refXCor + this.refXLength / 16, this.refYLength * 50 / 64);
+	context.fillText("[" + this.keys.slotFour.keyName + "] - Select Slot 4", this.refXCor + this.refXLength * 17 / 32, this.refYLength * 50 / 64);
+	context.fillText("[" + this.keys.slotFive.keyName + "] - Select Slot 5", this.refXCor + this.refXLength / 16, this.refYLength * 53 / 64);
+	context.fillText("[" + this.keys.slotSix.keyName + "] - Select Slot 6", this.refXCor + this.refXLength * 17 / 32, this.refYLength * 53 / 64);
+
+	//Render Ok Button
+	context.font = "bold 16pt sans-serif";
+	game.okButton.render((canvas.width - context.measureText("   " + game.okButton.name + "   ").width) / 2, canvas.height * 11 / 12 - canvas.height / 32, context.measureText("   " + game.okButton.name + "   ").width, canvas.height / 12);
+
 };
 
 Player.prototype.generateRandomNumber = function (currentTime){
